@@ -1,0 +1,2618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinSim — Malaysia Money Calculators</title>
+    <link rel="icon" href="FinSimLogo-icon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+        <a class="brand" href="#" aria-label="FinSim">
+            <img src="FinSimLogo-trim.png" alt="FinSim — Simulate Your Financial Future">
+        </a>
+
+        <nav class="nav">
+            <p class="nav-label">Tax</p>
+
+            <button type="button" class="nav-item is-active" data-module="pcb-module">
+                <i class="bi bi-calculator-fill"></i>
+                <span class="nav-text">
+                    <strong>PCB Calculator</strong>
+                    <small>Monthly salary deductions</small>
+                </span>
+            </button>
+
+            <button type="button" class="nav-item" data-module="tax-module">
+                <i class="bi bi-receipt-cutoff"></i>
+                <span class="nav-text">
+                    <strong>Income Tax Calculator</strong>
+                    <small>Annual assessment</small>
+                </span>
+            </button>
+
+            <p class="nav-label">Loans</p>
+
+            <button type="button" class="nav-item" data-module="home-loan-module">
+                <i class="bi bi-house-door-fill"></i>
+                <span class="nav-text">
+                    <strong>Home Loan</strong>
+                    <small>Instalments &amp; interest</small>
+                </span>
+            </button>
+
+            <button type="button" class="nav-item" data-module="car-loan-module">
+                <i class="bi bi-car-front-fill"></i>
+                <span class="nav-text">
+                    <strong>Car Loan</strong>
+                    <small>Hire purchase, flat rate</small>
+                </span>
+            </button>
+
+            <button type="button" class="nav-item" data-module="personal-loan-module">
+                <i class="bi bi-cash-stack"></i>
+                <span class="nav-text">
+                    <strong>Personal Loan</strong>
+                    <small>Flat-rate instalments</small>
+                </span>
+            </button>
+
+            <button type="button" class="nav-item" data-module="dsr-module">
+                <i class="bi bi-speedometer2"></i>
+                <span class="nav-text">
+                    <strong>DSR Calculator</strong>
+                    <small>How much you can borrow</small>
+                </span>
+            </button>
+
+            <p class="nav-label">Savings</p>
+
+            <button type="button" class="nav-item" data-module="goal-module">
+                <i class="bi bi-flag-fill"></i>
+                <span class="nav-text">
+                    <strong>Savings Goal</strong>
+                    <small>Reach a target by a date</small>
+                </span>
+            </button>
+
+            <button type="button" class="nav-item" data-module="epf-module">
+                <i class="bi bi-piggy-bank-fill"></i>
+                <span class="nav-text">
+                    <strong>EPF Calculator</strong>
+                    <small>Savings &amp; dividends</small>
+                </span>
+            </button>
+
+            <button type="button" class="nav-item" data-module="compound-module">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span class="nav-text">
+                    <strong>Compound Interest</strong>
+                    <small>Growth over time</small>
+                </span>
+            </button>
+
+            <button type="button" class="nav-item" data-module="retire-module">
+                <i class="bi bi-umbrella-fill"></i>
+                <span class="nav-text">
+                    <strong>Retirement Calculator</strong>
+                    <small>Income after you stop</small>
+                </span>
+            </button>
+
+            <p class="nav-label">Financial Planning</p>
+
+            <button type="button" class="nav-item" data-module="networth-module">
+                <i class="bi bi-bar-chart-fill"></i>
+                <span class="nav-text">
+                    <strong>Net Worth</strong>
+                    <small>Assets minus what you owe</small>
+                </span>
+            </button>
+
+            <button type="button" class="nav-item is-soon" disabled>
+                <i class="bi bi-shield-fill-check"></i>
+                <span class="nav-text">
+                    <strong>Emergency Fund</strong>
+                    <small>Months of cover</small>
+                </span>
+                <span class="nav-soon">Soon</span>
+            </button>
+
+            <button type="button" class="nav-item is-soon" disabled>
+                <i class="bi bi-signpost-split-fill"></i>
+                <span class="nav-text">
+                    <strong>Rent vs Buy</strong>
+                    <small>Which costs less</small>
+                </span>
+                <span class="nav-soon">Soon</span>
+            </button>
+        </nav>
+
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+            <h1 id="page-title">PCB Calculator</h1>
+            <p id="page-sub">Type your salary &mdash; deductions and take-home pay update as you go.</p>
+        </header>
+
+        <!-- ===================== PCB MODULE ===================== -->
+        <section id="pcb-module" class="module is-active">
+            <div class="split">
+
+                <form class="card panel" id="pcb-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>Your salary</h2>
+                        <button type="button" class="ghost-btn" data-reset="pcb">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="salary">Basic salary <span class="per">per month</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="salary" inputmode="decimal" min="0" step="100" placeholder="5,000">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="bonus">Bonus / allowances <span class="per">this month</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="bonus" inputmode="decimal" min="0" step="100" placeholder="0">
+                        </div>
+                        <p class="hint">Taxed as additional remuneration in the month it is paid.</p>
+                    </div>
+
+                    <div class="field">
+                        <label>Your EPF rate</label>
+                        <div class="seg" id="epfRate" data-value="11">
+                            <button type="button" data-val="11" class="is-on">11%</button>
+                            <button type="button" data-val="9">9%</button>
+                            <button type="button" data-val="8">8%</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Employer EPF rate</label>
+                        <div class="seg" id="epfEmployerRate" data-value="13">
+                            <button type="button" data-val="13" class="is-on">13%</button>
+                            <button type="button" data-val="12">12%</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="socsoCategory">SOCSO coverage</label>
+                        <select id="socsoCategory">
+                            <option value="3" selected>Injury + Invalidity + Lindung 24</option>
+                            <option value="4">Injury + Lindung 24</option>
+                            <option value="0">Injury + Invalidity</option>
+                            <option value="1">Employment injury only</option>
+                            <option value="2">No contribution</option>
+                        </select>
+                    </div>
+                </form>
+
+                <div class="results" id="pcb-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter a salary to run the simulation.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Take-home pay</span>
+                                <span class="stat-value" id="outNet">RM 0.00</span>
+                                <span class="stat-foot" id="outNetPct">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Deducted from you</span>
+                                <span class="stat-value is-minus" id="totalEmployee">RM 0.00</span>
+                                <span class="stat-foot" id="outGross">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Employer contributes</span>
+                                <span class="stat-value" id="totalEmployer">RM 0.00</span>
+                                <span class="stat-foot" id="outCost">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Where your pay goes</h3>
+                                <span class="block-note" id="distGross">&mdash;</span>
+                            </div>
+                            <div class="dist" id="dist">
+                                <span class="dist-net" id="segNet"></span>
+                                <span class="dist-epf" id="segEpf"></span>
+                                <span class="dist-sos" id="segSocso"></span>
+                                <span class="dist-pcb" id="segPcb"></span>
+                            </div>
+                            <ul class="legend">
+                                <li><i class="dot dot-net"></i>Take-home<b id="legNet">RM 0.00</b></li>
+                                <li><i class="dot dot-epf"></i>EPF<b id="legEpf">RM 0.00</b></li>
+                                <li><i class="dot dot-sos"></i>SOCSO + EIS<b id="legSocso">RM 0.00</b></li>
+                                <li><i class="dot dot-pcb"></i>PCB tax<b id="legPcb">RM 0.00</b></li>
+                            </ul>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Contribution breakdown</h3>
+                            </div>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Contribution</th>
+                                            <th>Employer</th>
+                                            <th>You</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>EPF</strong><small>Retirement savings (KWSP)</small></td>
+                                            <td id="outEpfEmployer">0.00</td>
+                                            <td id="outEpfEmployee">0.00</td>
+                                            <td id="outEpfTotal" class="is-strong">0.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>SOCSO</strong><small>Injury &amp; invalidity (PERKESO)</small></td>
+                                            <td id="outSocsoEmployer">0.00</td>
+                                            <td id="outSocsoEmployee">0.00</td>
+                                            <td id="outSocsoTotal" class="is-strong">0.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>EIS</strong><small>Employment insurance (SIP)</small></td>
+                                            <td id="outEisEmployer">0.00</td>
+                                            <td id="outEisEmployee">0.00</td>
+                                            <td id="outEisTotal" class="is-strong">0.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>PCB</strong><small>Monthly tax deduction (MTD)</small></td>
+                                            <td class="is-muted">&mdash;</td>
+                                            <td id="outPcb" class="is-minus">0.00</td>
+                                            <td id="outPcbTotal" class="is-minus is-strong">0.00</td>
+                                        </tr>
+                                        <tr class="total-row">
+                                            <td>Total</td>
+                                            <td id="sumEmployer">0.00</td>
+                                            <td id="sumEmployee">0.00</td>
+                                            <td id="sumGrand">0.00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== INCOME TAX MODULE ===================== -->
+        <section id="tax-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="tax-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>Your year</h2>
+                        <button type="button" class="ghost-btn" data-reset="tax">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="annualIncome">Annual income <span class="per">before tax</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="annualIncome" inputmode="decimal" min="0" step="1000" placeholder="70,000">
+                        </div>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Total income</span>
+                            <b id="tallyIncome">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span>Less reliefs claimed</span>
+                            <b id="tallyReliefs" class="is-minus">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Chargeable income</span>
+                            <b id="tallyChargeable">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-lightbulb"></i>
+                        <span>Fill in the reliefs on the right &mdash; each one is capped, and anything above the cap is ignored.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="tax-results">
+                    <div class="results-body">
+
+                        <div class="stats is-sticky">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Tax payable for the year</span>
+                                <span class="stat-value" id="outTaxPayable">RM 0.00</span>
+                                <span class="stat-foot" id="outMonthly">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Chargeable income</span>
+                                <span class="stat-value" id="lblChargeable">RM 0.00</span>
+                                <span class="stat-foot" id="outReliefFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Effective rate</span>
+                                <span class="stat-value" id="outEffective">0.0%</span>
+                                <span class="stat-foot" id="outMarginal">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Reliefs &amp; deductions</h3>
+                                <div class="block-actions">
+                                    <span class="block-note">Claimed <b id="reliefTotal">RM 0.00</b></span>
+                                    <button type="button" class="ghost-btn" id="reliefExpand" data-open="false">
+                                        <i class="bi bi-chevron-bar-down"></i> Explain every relief
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="relief-legend">
+                                <span>Relief</span>
+                                <span>You claim</span>
+                                <span>Counts as</span>
+                            </div>
+                            <div id="reliefGroups"></div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>How the brackets stack up</h3>
+                                <span class="block-note">Only the income above each threshold is taxed at that rate.</span>
+                            </div>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Chargeable band</th>
+                                            <th class="rate-cell">Rate</th>
+                                            <th>Taxed in band</th>
+                                            <th>Tax</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bracketBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== HOME LOAN MODULE ===================== -->
+        <section id="home-loan-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="loan-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>The property</h2>
+                        <button type="button" class="ghost-btn" data-reset="loan">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="loanPrice">Property price</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="loanPrice" inputmode="decimal" min="0" step="10000" placeholder="500,000">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Down payment <span class="per">of the price</span></label>
+                        <div class="seg" id="loanDownSeg" data-value="10">
+                            <button type="button" data-val="10" class="is-on">10%</button>
+                            <button type="button" data-val="20">20%</button>
+                            <button type="button" data-val="30">30%</button>
+                        </div>
+                        <div class="pct-pair">
+                            <div class="money-input money-input-sm">
+                                <span class="prefix">RM</span>
+                                <input type="number" id="loanDown" inputmode="decimal" min="0" step="1000" placeholder="0" aria-label="Down payment in ringgit">
+                            </div>
+                            <div class="money-input money-input-sm is-suffix">
+                                <span class="prefix">%</span>
+                                <input type="number" id="loanDownPct" inputmode="decimal" min="0" max="100" step="1" value="10" aria-label="Down payment as a percentage">
+                            </div>
+                        </div>
+                        <p class="hint">Type into either box and the other follows. Set it to nothing if you would rather put the loan amount straight into the price field.</p>
+                    </div>
+
+                    <div class="pct-pair">
+                        <div class="field">
+                            <label for="loanRate">Interest rate</label>
+                            <div class="money-input money-input-sm is-suffix">
+                                <span class="prefix">%</span>
+                                <input type="number" id="loanRate" inputmode="decimal" min="0" max="20" step="0.05" value="4">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="loanTenure">Tenure</label>
+                            <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                <span class="prefix">yrs</span>
+                                <input type="number" id="loanTenure" inputmode="numeric" min="1" max="40" step="1" value="35">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Try a different rate</label>
+                        <div class="seg" id="loanRateSeg" data-value="4">
+                            <button type="button" data-val="3.5">3.50%</button>
+                            <button type="button" data-val="4" class="is-on">4.00%</button>
+                            <button type="button" data-val="4.5">4.50%</button>
+                        </div>
+                        <p class="hint">Housing loans here float with the bank&rsquo;s base rate, so the rate you sign at is not the rate you keep for the whole tenure.</p>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Property price</span>
+                            <b id="loanTallyPrice">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span id="loanTallyDownLabel">Down payment</span>
+                            <b id="loanTallyDown" class="is-minus">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Loan amount</span>
+                            <b id="loanTallyAmount">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <p class="hint" id="loanMarginNote">Banks here lend up to 90% of the price on a first or second home &mdash; a third one is capped at 70%.</p>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Worked on monthly rest, the way a letter offer quotes it. Your real statement is on daily rest, so each month lands a few ringgit either side of this.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="loan-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter a property price to see the instalment.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Monthly instalment</span>
+                                <span class="stat-value" id="loanMonthly">RM 0.00</span>
+                                <span class="stat-foot" id="loanMonthlyFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Total interest</span>
+                                <span class="stat-value is-minus" id="loanInterest">RM 0.00</span>
+                                <span class="stat-foot" id="loanInterestFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Total repayment</span>
+                                <span class="stat-value" id="loanTotal">RM 0.00</span>
+                                <span class="stat-foot" id="loanTotalFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What you hand over in the end</h3>
+                                <span class="block-note" id="loanSplitNote">&mdash;</span>
+                            </div>
+                            <div class="dist">
+                                <span class="dist-net" id="segLoanPrincipal"></span>
+                                <span class="dist-pcb" id="segLoanInterest"></span>
+                            </div>
+                            <ul class="legend">
+                                <li><i class="dot dot-net"></i>The loan itself<b id="legLoanPrincipal">RM 0.00</b><span class="legend-pct" id="legLoanPrincipalPct">&mdash;</span></li>
+                                <li><i class="dot dot-pcb"></i>Interest<b id="legLoanInterest">RM 0.00</b><span class="legend-pct" id="legLoanInterestPct">&mdash;</span></li>
+                            </ul>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Paying extra</h3>
+                                <span class="block-note" id="loanExtraNote">&mdash;</span>
+                            </div>
+
+                            <div class="assume-grid">
+                                <div class="field">
+                                    <label for="loanExtra">Extra every month</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="loanExtra" inputmode="decimal" min="0" step="100" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="loanLump">One-off lump sum</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="loanLump" inputmode="decimal" min="0" step="1000" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="loanLumpYear">Paid at the end of year</label>
+                                    <input type="number" id="loanLumpYear" inputmode="numeric" min="1" max="40" step="1" value="1">
+                                </div>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span>Interest on the instalment alone</span>
+                                    <b id="loanBaseInterest">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Interest paying extra</span>
+                                    <b id="loanNewInterest">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Loan cleared in</span>
+                                    <b id="loanNewTerm">&mdash;</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>Interest saved</span>
+                                    <b id="loanSaved">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span>Most housing loans carry a 3&ndash;5 year lock-in, and settling early inside it costs 2&ndash;3% of the original loan. Check your letter offer before putting a lump sum in.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Amortisation schedule</h3>
+                                <div class="block-actions">
+                                    <span class="block-note" id="loanScheduleNote">&mdash;</span>
+                                    <div class="seg seg-sm" id="loanView" data-value="year">
+                                        <button type="button" data-val="year" class="is-on">Yearly</button>
+                                        <button type="button" data-val="month">Monthly</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="loanColPeriod">Year</th>
+                                            <th id="loanColPaid">Paid in</th>
+                                            <th>Principal</th>
+                                            <th>Interest</th>
+                                            <th>Balance left</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="loanScheduleBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== CAR LOAN MODULE ===================== -->
+        <section id="car-loan-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="car-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>The car</h2>
+                        <button type="button" class="ghost-btn" data-reset="car">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="carPrice">Car price <span class="per">on the road</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="carPrice" inputmode="decimal" min="0" step="1000" placeholder="90,000">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Down payment <span class="per">of the price</span></label>
+                        <div class="seg" id="carDownSeg" data-value="10">
+                            <button type="button" data-val="10" class="is-on">10%</button>
+                            <button type="button" data-val="20">20%</button>
+                            <button type="button" data-val="30">30%</button>
+                        </div>
+                        <div class="pct-pair">
+                            <div class="money-input money-input-sm">
+                                <span class="prefix">RM</span>
+                                <input type="number" id="carDown" inputmode="decimal" min="0" step="1000" placeholder="0" aria-label="Down payment in ringgit">
+                            </div>
+                            <div class="money-input money-input-sm is-suffix">
+                                <span class="prefix">%</span>
+                                <input type="number" id="carDownPct" inputmode="decimal" min="0" max="100" step="1" value="10" aria-label="Down payment as a percentage">
+                            </div>
+                        </div>
+                        <p class="hint">Type into either box and the other follows. Trade-in value on your old car counts here too.</p>
+                    </div>
+
+                    <div class="pct-pair">
+                        <div class="field">
+                            <label for="carRate">Interest rate <span class="per">flat</span></label>
+                            <div class="money-input money-input-sm is-suffix">
+                                <span class="prefix">%</span>
+                                <input type="number" id="carRate" inputmode="decimal" min="0" max="20" step="0.05" value="3">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="carTenure">Tenure</label>
+                            <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                <span class="prefix">yrs</span>
+                                <input type="number" id="carTenure" inputmode="numeric" min="1" max="9" step="1" value="7">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Typical rates</label>
+                        <div class="seg" id="carRateSeg" data-value="3">
+                            <button type="button" data-val="2.5">2.50%</button>
+                            <button type="button" data-val="3" class="is-on">3.00%</button>
+                            <button type="button" data-val="3.5">3.50%</button>
+                        </div>
+                        <p class="hint">New cars sit around 2.5&ndash;3.5% flat. A used car is dearer &mdash; 3.5&ndash;4.5% is normal, and the older the car the shorter the tenure a bank will give you.</p>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Car price</span>
+                            <b id="carTallyPrice">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span id="carTallyDownLabel">Down payment</span>
+                            <b id="carTallyDown" class="is-minus">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Loan amount</span>
+                            <b id="carTallyAmount">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <p class="hint" id="carMarginNote">Hire purchase here is capped at 90% of the price over a maximum of 9 years.</p>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Hire purchase is quoted <strong>flat</strong>: interest is charged on the whole amount you borrowed for every year of the tenure, however much you have already paid back. It does not shrink with the balance the way a housing loan does.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="car-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter a car price to see the instalment.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Monthly instalment</span>
+                                <span class="stat-value" id="carMonthly">RM 0.00</span>
+                                <span class="stat-foot" id="carMonthlyFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Total interest</span>
+                                <span class="stat-value is-minus" id="carInterest">RM 0.00</span>
+                                <span class="stat-foot" id="carInterestFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Total repayment</span>
+                                <span class="stat-value" id="carTotal">RM 0.00</span>
+                                <span class="stat-foot" id="carTotalFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What you hand over in the end</h3>
+                                <span class="block-note" id="carSplitNote">&mdash;</span>
+                            </div>
+                            <div class="dist">
+                                <span class="dist-net" id="segCarPrincipal"></span>
+                                <span class="dist-pcb" id="segCarInterest"></span>
+                            </div>
+                            <ul class="legend">
+                                <li><i class="dot dot-net"></i>The loan itself<b id="legCarPrincipal">RM 0.00</b><span class="legend-pct" id="legCarPrincipalPct">&mdash;</span></li>
+                                <li><i class="dot dot-pcb"></i>Interest<b id="legCarInterest">RM 0.00</b><span class="legend-pct" id="legCarInterestPct">&mdash;</span></li>
+                            </ul>
+                            <div class="tally">
+                                <div class="tally-row is-total">
+                                    <span>Out of pocket, deposit included</span>
+                                    <b id="carOutlay">RM 0.00</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What the flat rate really costs</h3>
+                                <span class="block-note" id="carEffectiveNote">&mdash;</span>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span>Flat rate on the quote</span>
+                                    <b id="carFlatRate">&mdash;</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Same instalment on a reducing balance</span>
+                                    <b id="carEffRate">&mdash;</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="carReducingLabel">Interest if it reduced with the balance</span>
+                                    <b id="carReducingInterest">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>What the flat quote costs you extra</span>
+                                    <b id="carFlatPremium" class="is-minus">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>A housing loan at 3% and a car loan at 3% are not the same 3%. Compare a car rate against another car rate &mdash; never against a mortgage.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Settling early</h3>
+                                <span class="block-note" id="carSettleNote">&mdash;</span>
+                            </div>
+
+                            <div class="assume-grid">
+                                <div class="field">
+                                    <label for="carSettleYear">Settle after year</label>
+                                    <input type="number" id="carSettleYear" inputmode="numeric" min="1" max="9" step="1" value="3">
+                                </div>
+                                <div class="field">
+                                    <label for="carSettleMonth">or after month</label>
+                                    <input type="number" id="carSettleMonth" inputmode="numeric" min="1" max="107" step="1" placeholder="36">
+                                </div>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="carSettleLeftLabel">Instalments still to run</span>
+                                    <b id="carSettleOutstanding">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Rebate on term charges <span class="per">Rule of 78</span></span>
+                                    <b id="carSettleRebate">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>Settlement figure</span>
+                                    <b id="carSettleAmount">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Interest you end up paying</span>
+                                    <b id="carSettleInterest" class="is-minus">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span>The rebate follows the Rule of 78 in the Hire-Purchase Act 1967, which front-loads the interest &mdash; settle halfway and you get back far less than half the term charges. Banks also want a notice period, and some add an early settlement fee.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Payment schedule</h3>
+                                <div class="block-actions">
+                                    <span class="block-note" id="carScheduleNote">&mdash;</span>
+                                    <div class="seg seg-sm" id="carView" data-value="year">
+                                        <button type="button" data-val="year" class="is-on">Yearly</button>
+                                        <button type="button" data-val="month">Monthly</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="carColPeriod">Year</th>
+                                            <th id="carColPaid">Paid in</th>
+                                            <th>Principal</th>
+                                            <th>Interest</th>
+                                            <th>Balance left</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="carScheduleBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== PERSONAL LOAN MODULE ===================== -->
+        <section id="personal-loan-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="personal-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>What you are borrowing</h2>
+                        <button type="button" class="ghost-btn" data-reset="personal">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="plAmount">Loan amount</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="plAmount" inputmode="decimal" min="0" step="1000" placeholder="30,000">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Tenure</label>
+                        <div class="seg" id="plTenureSeg" data-value="60">
+                            <button type="button" data-val="24">2 yrs</button>
+                            <button type="button" data-val="36">3 yrs</button>
+                            <button type="button" data-val="60" class="is-on">5 yrs</button>
+                            <button type="button" data-val="120">10 yrs</button>
+                        </div>
+                        <div class="pct-pair">
+                            <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                <span class="prefix">yrs</span>
+                                <input type="number" id="plYears" inputmode="decimal" min="1" max="10" step="0.5" value="5" aria-label="Tenure in years">
+                            </div>
+                            <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                <span class="prefix">mth</span>
+                                <input type="number" id="plMonths" inputmode="numeric" min="1" max="120" step="1" value="60" aria-label="Tenure in months">
+                            </div>
+                        </div>
+                        <p class="hint">Type into either box and the other follows. Banks here write personal loans over 1 to 10 years &mdash; the longer the tenure, the smaller the instalment and the more interest you hand over.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="plRate">Interest rate <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="plRate" inputmode="decimal" min="0" max="30" step="0.01" value="8">
+                        </div>
+                        <div class="seg" id="plRateSeg" data-value="8">
+                            <button type="button" data-val="4.5">4.50%</button>
+                            <button type="button" data-val="8" class="is-on">8.00%</button>
+                            <button type="button" data-val="12">12.00%</button>
+                        </div>
+                        <p class="hint">Bank personal loans run around 7&ndash;13% here. Civil servants borrowing against a payroll deduction &mdash; Bank Rakyat, BSN, MBSB, Public Bank &mdash; get 3.5&ndash;5%, which is why the same loan can cost three times as much depending on who signs the payslip.</p>
+                    </div>
+
+                    <div class="field">
+                        <label>How the rate is charged</label>
+                        <div class="seg" id="plBasisSeg" data-value="flat">
+                            <button type="button" data-val="flat" class="is-on">Flat</button>
+                            <button type="button" data-val="reducing">Reducing balance</button>
+                        </div>
+                        <p class="hint">Almost every personal loan advertised here is quoted <strong>flat</strong> &mdash; interest is charged on the whole amount you borrowed for every year of the tenure, no matter how much you have already paid back. Switch this only if the letter offer says reducing balance.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="plFees">Upfront fees <span class="per">deducted before you get it</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="plFees" inputmode="decimal" min="0" step="50" placeholder="0">
+                        </div>
+                        <p class="hint" id="plFeeHint">Stamp duty on the loan agreement is 0.5% of the amount. Some banks add a processing fee and take both out of the disbursement, so what lands in your account is less than what you repay interest on.</p>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Loan amount</span>
+                            <b id="plTallyAmount">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span>Upfront fees</span>
+                            <b id="plTallyFees" class="is-minus">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Cash in your hand</span>
+                            <b id="plTallyCash">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Nothing is pledged against a personal loan, so the rate carries the risk instead &mdash; it is the dearest ringgit most people borrow apart from a credit card.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="personal-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter a loan amount to see the instalment.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Monthly instalment</span>
+                                <span class="stat-value" id="plMonthly">RM 0.00</span>
+                                <span class="stat-foot" id="plMonthlyFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Total interest</span>
+                                <span class="stat-value is-minus" id="plInterest">RM 0.00</span>
+                                <span class="stat-foot" id="plInterestFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Total repayment</span>
+                                <span class="stat-value" id="plTotal">RM 0.00</span>
+                                <span class="stat-foot" id="plTotalFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What the loan costs you</h3>
+                                <span class="block-note" id="plSplitNote">&mdash;</span>
+                            </div>
+                            <div class="dist">
+                                <span class="dist-net" id="segPlPrincipal"></span>
+                                <span class="dist-pcb" id="segPlInterest"></span>
+                                <span class="dist-fee" id="segPlFees"></span>
+                            </div>
+                            <ul class="legend">
+                                <li><i class="dot dot-net"></i>The loan itself<b id="legPlPrincipal">RM 0.00</b><span class="legend-pct" id="legPlPrincipalPct">&mdash;</span></li>
+                                <li><i class="dot dot-pcb"></i>Interest<b id="legPlInterest">RM 0.00</b><span class="legend-pct" id="legPlInterestPct">&mdash;</span></li>
+                                <li><i class="dot dot-fee"></i>Upfront fees<b id="legPlFees">RM 0.00</b><span class="legend-pct" id="legPlFeesPct">&mdash;</span></li>
+                            </ul>
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="plCostPerLabel">Cost per ringgit borrowed</span>
+                                    <b id="plCostPer">&mdash;</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>What the loan costs on top of the money</span>
+                                    <b id="plCostTotal">RM 0.00</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Flat or reducing, on the same rate</h3>
+                                <span class="block-note" id="plCompareNote">&mdash;</span>
+                            </div>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>How the rate is charged</th>
+                                            <th>Monthly</th>
+                                            <th>Total interest</th>
+                                            <th>Total repayment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="plCompareBody"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="plEffLabel">What the flat rate really works out to</span>
+                                    <b id="plEffRate">&mdash;</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="plGapLabel">What the flat basis costs you extra</span>
+                                    <b id="plGap">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>A flat rate roughly doubles once you say it the way a housing loan is said, because you keep paying interest on money you have already given back. Compare a personal loan against another personal loan &mdash; never against a mortgage rate.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Settling early</h3>
+                                <span class="block-note" id="plSettleNote">&mdash;</span>
+                            </div>
+
+                            <div class="assume-grid">
+                                <div class="field">
+                                    <label for="plSettleMonth">Settle after month</label>
+                                    <input type="number" id="plSettleMonth" inputmode="numeric" min="1" max="119" step="1" value="24">
+                                </div>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="plSettleLeftLabel">Instalments still to run</span>
+                                    <b id="plSettleOutstanding">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="plSettleRebateLabel">Rebate on unearned interest</span>
+                                    <b id="plSettleRebate">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>Settlement figure</span>
+                                    <b id="plSettleAmount">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Interest you end up paying</span>
+                                    <b id="plSettleInterest" class="is-minus">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span id="plSettleFoot">On a flat-rate loan the rebate follows the Rule of 78, which front-loads the interest &mdash; settle halfway and you get back far less than half of it. Islamic financing calls this rebate <em>ibra&rsquo;</em> and Bank Negara requires it be granted; a conventional loan usually wants notice and may charge a fee.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Payment schedule</h3>
+                                <div class="block-actions">
+                                    <span class="block-note" id="plScheduleNote">&mdash;</span>
+                                    <div class="seg seg-sm" id="plView" data-value="month">
+                                        <button type="button" data-val="year">Yearly</button>
+                                        <button type="button" data-val="month" class="is-on">Monthly</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="plColPeriod">Month</th>
+                                            <th id="plColPaid">Instalment</th>
+                                            <th>Principal</th>
+                                            <th>Interest</th>
+                                            <th>Balance left</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="plScheduleBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== DSR MODULE ===================== -->
+        <section id="dsr-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="dsr-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>Your income</h2>
+                        <button type="button" class="ghost-btn" data-reset="dsr">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label>What you are typing in</label>
+                        <div class="seg" id="dsrBasisSeg" data-value="gross">
+                            <button type="button" data-val="gross" class="is-on">Gross salary</button>
+                            <button type="button" data-val="net">Take-home pay</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="dsrIncome">Monthly salary <span class="per" id="dsrIncomePer">before deductions</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="dsrIncome" inputmode="decimal" min="0" step="100" placeholder="6,000">
+                        </div>
+                        <p class="hint" id="dsrIncomeHint">EPF at 11%, SOCSO, EIS and PCB come off before the bank divides &mdash; DSR is worked on net pay, not the number on your offer letter.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="dsrAllowance">Fixed allowances <span class="per">per month</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="dsrAllowance" inputmode="decimal" min="0" step="100" placeholder="0">
+                        </div>
+                        <p class="hint">A transport or housing allowance that comes every month counts in full.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="dsrVariable">Commission, rental, overtime</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="dsrVariable" inputmode="decimal" min="0" step="100" placeholder="0">
+                        </div>
+                        <div class="seg" id="dsrVariableSeg" data-value="80">
+                            <button type="button" data-val="50">50%</button>
+                            <button type="button" data-val="80" class="is-on">80%</button>
+                            <button type="button" data-val="100">100%</button>
+                        </div>
+                        <p class="hint">Banks average this over 6 to 12 months of statements and then take a haircut &mdash; commonly 80% of rental and 50&ndash;80% of commission. Bonuses usually do not count at all.</p>
+                    </div>
+
+                    <div class="field">
+                        <label>Who you work for</label>
+                        <div class="seg" id="dsrEmploySeg" data-value="private">
+                            <button type="button" data-val="private" class="is-on">Private</button>
+                            <button type="button" data-val="glc">GLC</button>
+                            <button type="button" data-val="government">Government</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="dsrCap">The bank&rsquo;s DSR limit</label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="dsrCap" inputmode="decimal" min="10" max="100" step="1" value="60">
+                        </div>
+                        <p class="hint" id="dsrCapHint">Every bank sets its own. Private-sector borrowers are usually held near 60%, while a civil servant repaying through a payroll deduction can be taken to 80% and beyond.</p>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span id="dsrTallySalaryLabel">Salary after deductions</span>
+                            <b id="dsrTallySalary">RM 0.00</b>
+                        </div>
+                        <div class="tally-row" id="dsrDeductRow">
+                            <span>Statutory deductions</span>
+                            <b id="dsrTallyDeduct" class="is-minus">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span id="dsrTallyExtraLabel">Allowances and variable income</span>
+                            <b id="dsrTallyExtra">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Income the bank counts</span>
+                            <b id="dsrTallyIncome">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Every bank runs its own version of this &mdash; different haircuts, different limits, and a lending policy that moves with the year. Treat the answer as the shape of your file, not a decision.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="dsr-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter your income to see where you stand.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats is-sticky">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Debt service ratio</span>
+                                <span class="stat-value" id="dsrRatio">0.0%</span>
+                                <span class="stat-foot" id="dsrRatioFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Room for a new instalment</span>
+                                <span class="stat-value" id="dsrRoom">RM 0.00</span>
+                                <span class="stat-foot" id="dsrRoomFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Left after commitments</span>
+                                <span class="stat-value" id="dsrNdi">RM 0.00</span>
+                                <span class="stat-foot" id="dsrNdiFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What you already pay every month</h3>
+                                <span class="block-note" id="dsrCommitNote">&mdash;</span>
+                            </div>
+
+                            <div class="assume-grid">
+                                <div class="field">
+                                    <label for="dsrHome">Home loan</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="dsrHome" inputmode="decimal" min="0" step="100" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrCar">Car / hire purchase</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="dsrCar" inputmode="decimal" min="0" step="100" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrPersonal">Personal loan</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="dsrPersonal" inputmode="decimal" min="0" step="50" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrPtptn">PTPTN</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="dsrPtptn" inputmode="decimal" min="0" step="50" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrCardBalance">Credit card balance</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="dsrCardBalance" inputmode="decimal" min="0" step="500" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrOther">Anything else</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="dsrOther" inputmode="decimal" min="0" step="50" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="dsrCardLabel">Credit card, counted at 5% of the balance</span>
+                                    <b id="dsrCardMin">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>Total monthly commitments</span>
+                                    <b id="dsrCommitTotal">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>Only what a bank can see on your CCRIS or CTOS report counts &mdash; loans, PTPTN and the minimum on your cards. Rent, utilities, school fees and groceries never enter the ratio, however much of your pay they eat. A card counts even with nothing owing on it at some banks, at 5% of the limit rather than the balance.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Where your income stands</h3>
+                                <span class="block-note" id="dsrIncomeNote">&mdash;</span>
+                            </div>
+                            <div class="dist">
+                                <span class="dist-pcb" id="segDsrCommit"></span>
+                                <span class="dist-net" id="segDsrRoom"></span>
+                                <span class="dist-over" id="segDsrOver"></span>
+                            </div>
+                            <ul class="legend">
+                                <li><i class="dot dot-pcb"></i>Already committed<b id="legDsrCommit">RM 0.00</b><span class="legend-pct" id="legDsrCommitPct">&mdash;</span></li>
+                                <li><i class="dot dot-net"></i>Room before the limit<b id="legDsrRoom">RM 0.00</b><span class="legend-pct" id="legDsrRoomPct">&mdash;</span></li>
+                                <li><i class="dot dot-over"></i>Income beyond the limit<b id="legDsrOver">RM 0.00</b><span class="legend-pct" id="legDsrOverPct">&mdash;</span></li>
+                            </ul>
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="dsrLimitLabel">Most a bank would let you commit</span>
+                                    <b id="dsrLimitAmount">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Already committed</span>
+                                    <b id="dsrCommitAmount" class="is-minus">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>Room for a new instalment</span>
+                                    <b id="dsrRoomAmount">RM 0.00</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>How a bank reads that number</h3>
+                                <span class="block-note" id="dsrBandNote">&mdash;</span>
+                            </div>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>DSR</th>
+                                            <th>How it reads</th>
+                                            <th>Commitments at that level</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dsrBandBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>Net disposable income matters as much as the ratio. On a big salary a bank will go past 70% because plenty is still left over; on a small one it may stop well short of 60% because too little is.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What that room could borrow</h3>
+                                <span class="block-note" id="dsrBorrowNote">&mdash;</span>
+                            </div>
+
+                            <div class="assume-grid">
+                                <div class="field">
+                                    <label for="dsrHomeRate">Home loan rate</label>
+                                    <div class="money-input money-input-sm is-suffix">
+                                        <span class="prefix">%</span>
+                                        <input type="number" id="dsrHomeRate" inputmode="decimal" min="0" max="20" step="0.05" value="4">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrHomeYears">over</label>
+                                    <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                        <span class="prefix">yrs</span>
+                                        <input type="number" id="dsrHomeYears" inputmode="numeric" min="1" max="50" step="1" value="35">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrCarRate">Car loan, flat</label>
+                                    <div class="money-input money-input-sm is-suffix">
+                                        <span class="prefix">%</span>
+                                        <input type="number" id="dsrCarRate" inputmode="decimal" min="0" max="20" step="0.05" value="3">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrCarYears">over</label>
+                                    <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                        <span class="prefix">yrs</span>
+                                        <input type="number" id="dsrCarYears" inputmode="numeric" min="1" max="9" step="1" value="7">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrPersonalRate">Personal, flat</label>
+                                    <div class="money-input money-input-sm is-suffix">
+                                        <span class="prefix">%</span>
+                                        <input type="number" id="dsrPersonalRate" inputmode="decimal" min="0" max="30" step="0.05" value="8">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="dsrPersonalYears">over</label>
+                                    <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                        <span class="prefix">yrs</span>
+                                        <input type="number" id="dsrPersonalYears" inputmode="numeric" min="1" max="10" step="1" value="5">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>If you borrowed for</th>
+                                            <th class="rate-cell">Rate</th>
+                                            <th>Tenure</th>
+                                            <th>Most you could borrow</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dsrBorrowBody"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-exclamation-circle"></i>
+                                <span>This is only what the instalment allows. A bank still caps the margin of financing &mdash; 90% of a first or second home, 90% of a car &mdash; and still wants the deposit, the legal fees and the stamp duty in cash on top.</span>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SAVINGS GOAL MODULE ===================== -->
+        <section id="goal-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="goal-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>Your goal</h2>
+                        <button type="button" class="ghost-btn" data-reset="goal">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="goalTarget">Target amount</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="goalTarget" inputmode="decimal" min="0" step="500" placeholder="20,000">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="goalSaved">Already saved <span class="per">head start</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="goalSaved" inputmode="decimal" min="0" step="500" placeholder="5,000">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>How long you have</label>
+                        <div class="seg" id="goalMonthsSeg" data-value="18">
+                            <button type="button" data-val="6">6 mth</button>
+                            <button type="button" data-val="12">1 yr</button>
+                            <button type="button" data-val="18" class="is-on">18 mth</button>
+                            <button type="button" data-val="36">3 yrs</button>
+                        </div>
+                        <div class="pct-pair">
+                            <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                <span class="prefix">mth</span>
+                                <input type="number" id="goalMonths" inputmode="numeric" min="1" max="600" step="1" value="18" aria-label="Months until the deadline">
+                            </div>
+                            <input type="date" id="goalDate" aria-label="Date you want the money by">
+                        </div>
+                        <p class="hint">Set the months or pick the date &mdash; the other one follows. Deposits are counted at the end of each month, so the last one lands on the deadline itself.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="goalReturn">Expected return <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="goalReturn" inputmode="decimal" min="0" max="20" step="0.05" value="0">
+                        </div>
+                        <div class="seg" id="goalReturnSeg" data-value="0">
+                            <button type="button" data-val="0" class="is-on">0%</button>
+                            <button type="button" data-val="2.75">2.75%</button>
+                            <button type="button" data-val="5.5">5.50%</button>
+                        </div>
+                        <p class="hint">A current account pays nothing. A fixed deposit sits around 2.5&ndash;3%, ASB and unit trusts nearer 5&ndash;6% &mdash; but only the first two are a promise. For a goal you must hit on a date, leave this at 0% and treat any growth as a bonus.</p>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Target</span>
+                            <b id="goalTallyTarget">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span>Already saved</span>
+                            <b id="goalTallySaved" class="is-minus">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Still to find</span>
+                            <b id="goalTallyNeed">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Save the amount below <strong>first</strong>, on payday, and spend what is left. A goal funded by whatever survives to the end of the month is the one that slips.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="goal-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter a target to see what it takes each month.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Save every month</span>
+                                <span class="stat-value" id="goalMonthly">RM 0.00</span>
+                                <span class="stat-foot" id="goalMonthlyFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Out of your pocket</span>
+                                <span class="stat-value" id="goalDeposits">RM 0.00</span>
+                                <span class="stat-foot" id="goalDepositsFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Growth earned</span>
+                                <span class="stat-value" id="goalGrowth">RM 0.00</span>
+                                <span class="stat-foot" id="goalGrowthFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Where the money comes from</h3>
+                                <span class="block-note" id="goalMixNote">&mdash;</span>
+                            </div>
+                            <div class="dist">
+                                <span class="dist-net" id="segGoalOpening"></span>
+                                <span class="dist-epf" id="segGoalDeposits"></span>
+                                <span class="dist-sos" id="segGoalGrowth"></span>
+                            </div>
+                            <ul class="legend">
+                                <li><i class="dot dot-net"></i>What you already had<b id="legGoalOpening">RM 0.00</b><span class="legend-pct" id="legGoalOpeningPct">&mdash;</span></li>
+                                <li><i class="dot dot-epf"></i>Your monthly deposits<b id="legGoalDeposits">RM 0.00</b><span class="legend-pct" id="legGoalDepositsPct">&mdash;</span></li>
+                                <li><i class="dot dot-sos"></i>Growth on the balance<b id="legGoalGrowth">RM 0.00</b><span class="legend-pct" id="legGoalGrowthPct">&mdash;</span></li>
+                            </ul>
+                            <div class="tally">
+                                <div class="tally-row is-total">
+                                    <span id="goalEndLabel">Balance on the deadline</span>
+                                    <b id="goalEndBalance">RM 0.00</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>If that is more than you can spare</h3>
+                                <span class="block-note" id="goalAffordNote">&mdash;</span>
+                            </div>
+
+                            <div class="assume-grid">
+                                <div class="field">
+                                    <label for="goalAffordAmount">I can save a month</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="goalAffordAmount" inputmode="decimal" min="0" step="50" placeholder="500">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="goalAffordTimeLabel">How long that takes</span>
+                                    <b id="goalAffordTime">&mdash;</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>You get there</span>
+                                    <b id="goalAffordDate">&mdash;</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="goalAffordBalanceLabel">Balance on your deadline instead</span>
+                                    <b id="goalAffordBalance">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="goalAffordGapLabel">Short of the target by</span>
+                                    <b id="goalAffordGap">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>There are only three levers on a savings goal: put in more each month, give it more time, or want less. This block moves the first one and tells you what the other two have to give.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Month by month</h3>
+                                <div class="block-actions">
+                                    <span class="block-note" id="goalScheduleNote">&mdash;</span>
+                                    <div class="seg seg-sm" id="goalView" data-value="month">
+                                        <button type="button" data-val="year">Yearly</button>
+                                        <button type="button" data-val="month" class="is-on">Monthly</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="goalColPeriod">Month</th>
+                                            <th id="goalColPaid">Deposit</th>
+                                            <th>Growth</th>
+                                            <th>Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="goalScheduleBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== EPF MODULE ===================== -->
+        <section id="epf-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="epf-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>Your contribution</h2>
+                        <button type="button" class="ghost-btn" data-reset="epf">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="epfSalary">Monthly salary <span class="per">before deductions</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="epfSalary" inputmode="decimal" min="0" step="100" placeholder="5,000">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Your rate</label>
+                        <div class="seg" id="epfRateSelf" data-value="11">
+                            <button type="button" data-val="11" class="is-on">11%</button>
+                            <button type="button" data-val="9">9%</button>
+                            <button type="button" data-val="8">8%</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Employer rate</label>
+                        <div class="seg" id="epfRateEmployer" data-value="13">
+                            <button type="button" data-val="13" class="is-on">13%</button>
+                            <button type="button" data-val="12">12%</button>
+                        </div>
+                        <p class="hint">13% is the statutory rate for wages up to RM5,000; above that it drops to 12%.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="epfVoluntary">Voluntary top-up <span class="per">per month</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="epfVoluntary" inputmode="decimal" min="0" step="50" placeholder="0">
+                        </div>
+                        <p class="hint">Self-contribution on top of the statutory deduction &mdash; it earns the same dividend.</p>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>You put in</span>
+                            <b id="epfTallySelf">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span>Employer puts in</span>
+                            <b id="epfTallyEmployer">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Into your account</span>
+                            <b id="epfTallyMonthly">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Contributions follow the KWSP Third Schedule &mdash; wages are taken to the top of their RM20 band and rounded up to the next ringgit, so the figures are a few sen above a plain percentage.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="epf-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter a salary to see what lands in your EPF.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Monthly EPF</span>
+                                <span class="stat-value" id="epfMonthly">RM 0.00</span>
+                                <span class="stat-foot" id="epfMonthlyFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">You contribute</span>
+                                <span class="stat-value" id="epfSelfMonthly">RM 0.00</span>
+                                <span class="stat-foot" id="epfSelfFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Employer contributes</span>
+                                <span class="stat-value" id="epfEmployerMonthly">RM 0.00</span>
+                                <span class="stat-foot" id="epfEmployerFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Monthly and yearly</h3>
+                                <span class="block-note" id="epfEffectiveNote">&mdash;</span>
+                            </div>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Source</th>
+                                            <th class="rate-cell">Rate</th>
+                                            <th>Every month</th>
+                                            <th>Every year</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>You</strong><small>Deducted from your salary</small></td>
+                                            <td class="rate-cell"><span class="rate-pill" id="epfSelfRate">11%</span></td>
+                                            <td id="epfSelfMth">0.00</td>
+                                            <td id="epfSelfYr" class="is-strong">0.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Employer</strong><small>Paid on top of your salary</small></td>
+                                            <td class="rate-cell"><span class="rate-pill" id="epfErRate">13%</span></td>
+                                            <td id="epfErMth">0.00</td>
+                                            <td id="epfErYr" class="is-strong">0.00</td>
+                                        </tr>
+                                        <tr id="epfVolRow" hidden>
+                                            <td><strong>Voluntary</strong><small>Your own top-up</small></td>
+                                            <td class="rate-cell is-muted">&mdash;</td>
+                                            <td id="epfVolMth">0.00</td>
+                                            <td id="epfVolYr" class="is-strong">0.00</td>
+                                        </tr>
+                                        <tr class="total-row">
+                                            <td>Total</td>
+                                            <td class="rate-cell"></td>
+                                            <td id="epfTotMth">0.00</td>
+                                            <td id="epfTotYr">0.00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Where each month&rsquo;s contribution lands</h3>
+                                <span class="block-note">Split 75 / 15 / 10 since May 2024</span>
+                            </div>
+                            <div class="dist">
+                                <span class="dist-net" id="segAkaun1"></span>
+                                <span class="dist-epf" id="segAkaun2"></span>
+                                <span class="dist-sos" id="segAkaun3"></span>
+                            </div>
+                            <ul class="legend">
+                                <li><i class="dot dot-net"></i>Persaraan &mdash; locked till 55<b id="legAkaun1">RM 0.00</b></li>
+                                <li><i class="dot dot-epf"></i>Sejahtera &mdash; housing, health, education<b id="legAkaun2">RM 0.00</b></li>
+                                <li><i class="dot dot-sos"></i>Fleksibel &mdash; withdraw any time<b id="legAkaun3">RM 0.00</b></li>
+                            </ul>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Projection</h3>
+                                <span class="block-note" id="epfProjNote">&mdash;</span>
+                            </div>
+
+                            <div class="assume-grid">
+                                <div class="field">
+                                    <label for="epfBalance">EPF balance now</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="epfBalance" inputmode="decimal" min="0" step="1000" placeholder="0">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="epfAge">Your age</label>
+                                    <input type="number" id="epfAge" inputmode="numeric" min="16" max="60" step="1" placeholder="30">
+                                </div>
+                                <div class="field">
+                                    <label for="epfUntil">Project to age</label>
+                                    <input type="number" id="epfUntil" inputmode="numeric" min="17" max="60" step="1" value="55">
+                                </div>
+                                <div class="field">
+                                    <label for="epfGrowth">Annual raise</label>
+                                    <div class="money-input money-input-sm is-suffix">
+                                        <span class="prefix">%</span>
+                                        <input type="number" id="epfGrowth" inputmode="decimal" min="0" max="30" step="0.5" value="3">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="epfDividend">Dividend rate</label>
+                                    <div class="money-input money-input-sm is-suffix">
+                                        <span class="prefix">%</span>
+                                        <input type="number" id="epfDividend" inputmode="decimal" min="0" max="20" step="0.05" value="5.5">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field assume-seg">
+                                <label>Try a different dividend</label>
+                                <div class="seg" id="epfDividendSeg" data-value="5.5">
+                                    <button type="button" data-val="4.5">4.50%</button>
+                                    <button type="button" data-val="5.5" class="is-on">5.50%</button>
+                                    <button type="button" data-val="6.5">6.50%</button>
+                                </div>
+                                <p class="hint">EPF declares a new rate every year, so each year in the table below has its own field &mdash; type over any of them to use the rate you expect. Changing the rate above refills every year.</p>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span>Balance today</span>
+                                    <b id="epfProjOpening">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="epfProjInLabel">Contributions</span>
+                                    <b id="epfProjIn">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Dividends earned</span>
+                                    <b id="epfProjDividend">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="epfProjFinalLabel">Projected balance</span>
+                                    <b id="epfProjFinal">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Age</th>
+                                            <th>Salary</th>
+                                            <th>Paid in</th>
+                                            <th class="rate-cell">Rate</th>
+                                            <th>Dividend</th>
+                                            <th>Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="epfProjBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== COMPOUND INTEREST MODULE ===================== -->
+        <section id="compound-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="compound-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>Your investment</h2>
+                        <button type="button" class="ghost-btn" data-reset="compound">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="ciInitial">Initial investment</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="ciInitial" inputmode="decimal" min="0" step="1000" placeholder="10,000">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="ciMonthly">Monthly contribution <span class="per">every month</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="ciMonthly" inputmode="decimal" min="0" step="50" placeholder="500">
+                        </div>
+                        <p class="hint">Counted at the end of each month, the way a standing instruction or a monthly unit trust purchase actually lands.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="ciReturn">Expected annual return <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="ciReturn" inputmode="decimal" min="0" max="30" step="0.05" value="5.5">
+                        </div>
+                        <div class="seg" id="ciReturnSeg" data-value="5.5">
+                            <button type="button" data-val="3.5">FD 3.5%</button>
+                            <button type="button" data-val="5.5" class="is-on">ASB 5.5%</button>
+                            <button type="button" data-val="8">Equity 8%</button>
+                        </div>
+                        <p class="hint">A fixed deposit sits near 3&ndash;3.5%, ASB and EPF have paid roughly 5&ndash;6.5%, a global equity fund averages 7&ndash;10% <em>over decades</em> &mdash; with losing years along the way. Only the fixed deposit is a promise.</p>
+                    </div>
+
+                    <div class="field">
+                        <label>Investment period</label>
+                        <div class="seg" id="ciYearsSeg" data-value="10">
+                            <button type="button" data-val="5">5 yrs</button>
+                            <button type="button" data-val="10" class="is-on">10 yrs</button>
+                            <button type="button" data-val="20">20 yrs</button>
+                            <button type="button" data-val="30">30 yrs</button>
+                        </div>
+                        <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                            <span class="prefix">yrs</span>
+                            <input type="number" id="ciYears" inputmode="numeric" min="1" max="50" step="1" value="10" aria-label="Years invested">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Interest credited</label>
+                        <div class="seg" id="ciCompoundSeg" data-value="1">
+                            <button type="button" data-val="1" class="is-on">Monthly</button>
+                            <button type="button" data-val="3">Quarterly</button>
+                            <button type="button" data-val="12">Yearly</button>
+                        </div>
+                        <p class="hint">How often earnings are added to the balance and start earning on their own. Unit trusts and savings accounts rest monthly, fixed deposits quarterly, EPF and ASB pay once a year &mdash; weighted by the months you held the money.</p>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Initial investment</span>
+                            <b id="ciTallyInitial">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span id="ciTallyDepositsLabel">Contributions</span>
+                            <b id="ciTallyDeposits">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Total contribution</span>
+                            <b id="ciTallyIn">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Compounding does almost nothing for the first few years and almost everything in the last few. The lever that matters most is not the return &mdash; it is <strong>how early you start</strong>.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="compound-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter an initial amount or a monthly contribution to see it grow.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Final value</span>
+                                <span class="stat-value" id="ciFinal">RM 0.00</span>
+                                <span class="stat-foot" id="ciFinalFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Total contribution</span>
+                                <span class="stat-value" id="ciContributed">RM 0.00</span>
+                                <span class="stat-foot" id="ciContributedFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Investment profit</span>
+                                <span class="stat-value" id="ciProfit">RM 0.00</span>
+                                <span class="stat-foot" id="ciProfitFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Where the money comes from</h3>
+                                <span class="block-note" id="ciMixNote">&mdash;</span>
+                            </div>
+                            <div class="dist">
+                                <span class="dist-net" id="segCiInitial"></span>
+                                <span class="dist-epf" id="segCiDeposits"></span>
+                                <span class="dist-sos" id="segCiGrowth"></span>
+                            </div>
+                            <ul class="legend">
+                                <li><i class="dot dot-net"></i>Initial investment<b id="legCiInitial">RM 0.00</b><span class="legend-pct" id="legCiInitialPct">&mdash;</span></li>
+                                <li><i class="dot dot-epf"></i>Monthly contributions<b id="legCiDeposits">RM 0.00</b><span class="legend-pct" id="legCiDepositsPct">&mdash;</span></li>
+                                <li><i class="dot dot-sos"></i>Investment profit<b id="legCiGrowth">RM 0.00</b><span class="legend-pct" id="legCiGrowthPct">&mdash;</span></li>
+                            </ul>
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="ciCrossLabel">Profit passes what you put in</span>
+                                    <b id="ciCross">&mdash;</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="ciEndLabel">Final value</span>
+                                    <b id="ciEndBalance">RM 0.00</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What it is worth in today's money</h3>
+                                <span class="block-note" id="ciRealNote">&mdash;</span>
+                            </div>
+
+                            <div class="assume-grid">
+                                <div class="field">
+                                    <label for="ciInflation">Inflation a year</label>
+                                    <div class="money-input money-input-sm is-suffix">
+                                        <span class="prefix">%</span>
+                                        <input type="number" id="ciInflation" inputmode="decimal" min="0" max="20" step="0.1" value="2.5">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="ciRealNominalLabel">Final value on paper</span>
+                                    <b id="ciRealNominal">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>What that buys in today's ringgit</span>
+                                    <b id="ciReal">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>Eaten by inflation</span>
+                                    <b id="ciRealLoss" class="is-minus">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>What you actually earn is the return <em>minus</em> inflation. At 5.5% with prices rising 2.5%, your money is only really growing about 3% a year &mdash; which is still the whole reason not to leave it in a current account.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What moves the needle</h3>
+                                <span class="block-note" id="ciLeverNote">&mdash;</span>
+                            </div>
+                            <div class="table-wrap">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Change one thing</th>
+                                            <th>Final value</th>
+                                            <th>Difference</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ciLeverBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>Time usually beats both effort and return. Delaying the start costs you the years that were doing the most work &mdash; the last ones.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Year by year</h3>
+                                <div class="block-actions">
+                                    <span class="block-note" id="ciScheduleNote">&mdash;</span>
+                                    <div class="seg seg-sm" id="ciView" data-value="year">
+                                        <button type="button" data-val="year" class="is-on">Yearly</button>
+                                        <button type="button" data-val="month">Monthly</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="ciColPeriod">Year</th>
+                                            <th id="ciColPaid">Paid in</th>
+                                            <th>Growth</th>
+                                            <th>Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ciScheduleBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== RETIREMENT MODULE ===================== -->
+        <section id="retire-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="retire-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>Your retirement</h2>
+                        <button type="button" class="ghost-btn" data-reset="retire">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="rtIncome">Income you want <span class="per">a month, today's money</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="rtIncome" inputmode="decimal" min="0" step="100" placeholder="5,000">
+                        </div>
+                        <p class="hint">Say it in <strong>today's</strong> ringgit &mdash; inflation is added for you. EPF's Belanjawanku guide puts a retired single in the Klang Valley at roughly RM2,500 a month and a couple past RM3,000.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rtOther">Other income then <span class="per">a month, today's money</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="rtOther" inputmode="decimal" min="0" step="100" placeholder="0">
+                        </div>
+                        <p class="hint">A pension, rental, dividends &mdash; anything that keeps arriving after you stop working. Your fund only has to cover the rest.</p>
+                    </div>
+
+                    <div class="field">
+                        <label>Age now, and when you stop</label>
+                        <div class="pct-pair">
+                            <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                <span class="prefix">now</span>
+                                <input type="number" id="rtAge" inputmode="numeric" min="16" max="80" step="1" value="30" aria-label="Your age now">
+                            </div>
+                            <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                <span class="prefix">stop</span>
+                                <input type="number" id="rtRetireAge" inputmode="numeric" min="30" max="85" step="1" value="60" aria-label="Age you retire">
+                            </div>
+                        </div>
+                        <div class="seg" id="rtRetireSeg" data-value="60">
+                            <button type="button" data-val="55">55</button>
+                            <button type="button" data-val="60" class="is-on">60</button>
+                            <button type="button" data-val="65">65</button>
+                        </div>
+                        <p class="hint">EPF opens in full at 55; the minimum retirement age for employees is 60. Working longer does two things at once &mdash; more years paying in, fewer years to pay for.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rtLiveTo">Plan the money to last until</label>
+                        <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                            <span class="prefix">age</span>
+                            <input type="number" id="rtLiveTo" inputmode="numeric" min="50" max="110" step="1" value="85" aria-label="Age the money must last to">
+                        </div>
+                        <div class="seg" id="rtLiveSeg" data-value="85">
+                            <button type="button" data-val="75">75</button>
+                            <button type="button" data-val="80">80</button>
+                            <button type="button" data-val="85" class="is-on">85</button>
+                            <button type="button" data-val="90">90</button>
+                        </div>
+                        <p class="hint">Malaysians live to about 75 on average, so planning only to the average leaves half the story uncovered. Running out of money is the one retirement mistake you cannot fix afterwards.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rtSavings">Saved for retirement so far</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="rtSavings" inputmode="decimal" min="0" step="1000" placeholder="80,000">
+                        </div>
+                        <p class="hint">EPF, PRS, ASB, unit trusts, shares &mdash; everything earmarked for later. Not the house you live in.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rtMonthly">Going in every month</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="rtMonthly" inputmode="decimal" min="0" step="100" placeholder="1,500">
+                        </div>
+                        <p class="hint">Count your EPF contributions too &mdash; yours and your employer's, usually 11% and 13% of salary, so 24% of pay before anything you save on your own.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rtReturn">Return while working <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="rtReturn" inputmode="decimal" min="0" max="20" step="0.05" value="5.5">
+                        </div>
+                        <div class="seg" id="rtReturnSeg" data-value="5.5">
+                            <button type="button" data-val="4">4%</button>
+                            <button type="button" data-val="5.5" class="is-on">5.5%</button>
+                            <button type="button" data-val="7">7%</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="rtPostReturn">Return after you retire <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="rtPostReturn" inputmode="decimal" min="0" max="20" step="0.05" value="4">
+                        </div>
+                        <p class="hint">Lower on purpose. Money you are living off cannot sit through a bad decade waiting to recover, so it usually moves to safer, quieter things.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rtInflation">Inflation <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="rtInflation" inputmode="decimal" min="0" max="15" step="0.1" value="2.5">
+                        </div>
+                        <div class="seg" id="rtInflationSeg" data-value="2.5">
+                            <button type="button" data-val="2">2%</button>
+                            <button type="button" data-val="2.5" class="is-on">2.5%</button>
+                            <button type="button" data-val="3.5">3.5%</button>
+                        </div>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Income you want, today</span>
+                            <b id="rtTallyToday">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span id="rtTallyThenLabel">The same money when you retire</span>
+                            <b id="rtTallyThen">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span id="rtTallyYearsLabel">Years the fund must carry you</span>
+                            <b id="rtTallyYears">&mdash;</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Nothing here is a promise &mdash; a 30-year plan is a direction, not a prediction. Redo it every few years with the figures you actually hit.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="retire-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter the monthly income you want in retirement to see what it takes.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label" id="rtNeedLabel">Fund needed when you retire</span>
+                                <span class="stat-value" id="rtNeed">RM 0.00</span>
+                                <span class="stat-foot" id="rtNeedFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">On track for</span>
+                                <span class="stat-value" id="rtHave">RM 0.00</span>
+                                <span class="stat-foot" id="rtHaveFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label" id="rtGapLabel">Shortfall</span>
+                                <span class="stat-value" id="rtGap">RM 0.00</span>
+                                <span class="stat-foot" id="rtGapFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What you will have against what you need</h3>
+                                <span class="block-note" id="rtBarNote">&mdash;</span>
+                            </div>
+
+                            <div class="nw-bar">
+                                <div class="nw-bar-top">
+                                    <span id="rtBarHaveLabel">What you will have</span>
+                                    <b id="rtBarHave">RM 0.00</b>
+                                </div>
+                                <div class="dist">
+                                    <span class="dist-net" id="segRtSaved"></span>
+                                    <span class="dist-epf" id="segRtPaid"></span>
+                                    <span class="dist-sos" id="segRtGrowth"></span>
+                                </div>
+                                <ul class="legend">
+                                    <li><i class="dot dot-net"></i>Saved already<b id="legRtSaved">RM 0.00</b><span class="legend-pct" id="legRtSavedPct">&mdash;</span></li>
+                                    <li><i class="dot dot-epf"></i>Still to be paid in<b id="legRtPaid">RM 0.00</b><span class="legend-pct" id="legRtPaidPct">&mdash;</span></li>
+                                    <li><i class="dot dot-sos"></i>Growth on the way<b id="legRtGrowth">RM 0.00</b><span class="legend-pct" id="legRtGrowthPct">&mdash;</span></li>
+                                </ul>
+                            </div>
+
+                            <div class="nw-bar">
+                                <div class="nw-bar-top">
+                                    <span id="rtBarNeedLabel">What you need</span>
+                                    <b id="rtBarNeed">RM 0.00</b>
+                                </div>
+                                <div class="dist">
+                                    <span class="dist-amber" id="segRtNeed"></span>
+                                </div>
+                                <ul class="legend">
+                                    <li><i class="dot dot-amber"></i><span id="rtNeedLegLabel">To pay you every month until the end</span><b id="legRtNeed">RM 0.00</b></li>
+                                </ul>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="rtCoverLabel">Your plan covers</span>
+                                    <b id="rtCover">&mdash;</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="rtBarGapLabel">Short by</span>
+                                    <b id="rtBarGap">RM 0.00</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3 id="rtFixTitle">Three ways to close the gap</h3>
+                                <span class="block-note" id="rtFixNote">&mdash;</span>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="rtFixSaveLabel">Save this much a month instead</span>
+                                    <b id="rtFixSave">&mdash;</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="rtFixWorkLabel">Or keep working until</span>
+                                    <b id="rtFixWork">&mdash;</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="rtFixLiveLabel">Or live on this instead</span>
+                                    <b id="rtFixLive">&mdash;</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>Each line closes the whole gap on its own, so you would only need one &mdash; or a smaller piece of each. The last figure is in today's ringgit, so you can compare it with what you live on now.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Your money, year by year</h3>
+                                <div class="block-actions">
+                                    <span class="block-note" id="rtScheduleNote">&mdash;</span>
+                                    <div class="seg seg-sm" id="rtView" data-value="year">
+                                        <button type="button" data-val="year" class="is-on">Yearly</button>
+                                        <button type="button" data-val="month">Monthly</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="rtColPeriod">Age</th>
+                                            <th>In or out</th>
+                                            <th>Growth</th>
+                                            <th>Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rtScheduleBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>The balance keeps earning after you retire &mdash; that is why a fund that pays out for 25 years does not need 25 years of spending sitting in it on day one.</span>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== NET WORTH MODULE ===================== -->
+        <section id="networth-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="networth-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>What you own, what you owe</h2>
+                        <button type="button" class="ghost-btn" data-reset="networth">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="nw-side">
+                        <div class="nw-side-head">
+                            <h3>Assets</h3>
+                            <b id="nwAssetsHead">RM 0.00</b>
+                        </div>
+                        <div id="nwAssetGroups"></div>
+                    </div>
+
+                    <div class="nw-side">
+                        <div class="nw-side-head is-debt">
+                            <h3>Liabilities</h3>
+                            <b id="nwDebtsHead">RM 0.00</b>
+                        </div>
+                        <div id="nwDebtGroups"></div>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Total assets</span>
+                            <b id="nwTallyAssets">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span>Total liabilities</span>
+                            <b id="nwTallyDebts" class="is-minus">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Net worth</span>
+                            <b id="nwTallyNet">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Value everything at what it would <strong>sell for today</strong>, and every debt at what it would cost to <strong>settle today</strong> &mdash; not what you paid, and not what you originally borrowed.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="networth-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Fill in what you own and what you owe to see where you stand.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label">Net worth</span>
+                                <span class="stat-value" id="nwNet">RM 0.00</span>
+                                <span class="stat-foot" id="nwNetFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Total assets</span>
+                                <span class="stat-value" id="nwAssets">RM 0.00</span>
+                                <span class="stat-foot" id="nwAssetsFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Total liabilities</span>
+                                <span class="stat-value is-minus" id="nwDebts">RM 0.00</span>
+                                <span class="stat-foot" id="nwDebtsFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What you own against what you owe</h3>
+                                <span class="block-note" id="nwBarNote">&mdash;</span>
+                            </div>
+
+                            <div class="nw-bar">
+                                <div class="nw-bar-top">
+                                    <span>What you own</span>
+                                    <b id="nwBarAssets">RM 0.00</b>
+                                </div>
+                                <div class="dist">
+                                    <span class="dist-net" id="segNwLiquid"></span>
+                                    <span class="dist-epf" id="segNwInvest"></span>
+                                    <span class="dist-sos" id="segNwFixed"></span>
+                                </div>
+                                <ul class="legend">
+                                    <li><i class="dot dot-net"></i>Cash &amp; bank<b id="legNwLiquid">RM 0.00</b><span class="legend-pct" id="legNwLiquidPct">&mdash;</span></li>
+                                    <li><i class="dot dot-epf"></i>Investments<b id="legNwInvest">RM 0.00</b><span class="legend-pct" id="legNwInvestPct">&mdash;</span></li>
+                                    <li><i class="dot dot-sos"></i>Property &amp; vehicles<b id="legNwFixed">RM 0.00</b><span class="legend-pct" id="legNwFixedPct">&mdash;</span></li>
+                                </ul>
+                            </div>
+
+                            <div class="nw-bar">
+                                <div class="nw-bar-top">
+                                    <span id="nwBarDebtLabel">What you owe</span>
+                                    <b id="nwBarDebts">RM 0.00</b>
+                                </div>
+                                <div class="dist">
+                                    <span class="dist-amber" id="segNwLong"></span>
+                                    <span class="dist-pcb" id="segNwShort"></span>
+                                </div>
+                                <ul class="legend">
+                                    <li><i class="dot dot-amber"></i>Long-term debt<b id="legNwLong">RM 0.00</b><span class="legend-pct" id="legNwLongPct">&mdash;</span></li>
+                                    <li><i class="dot dot-pcb"></i>Short-term debt<b id="legNwShort">RM 0.00</b><span class="legend-pct" id="legNwShortPct">&mdash;</span></li>
+                                </ul>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span>Of every ringgit you hold, yours</span>
+                                    <b id="nwOwnedShare">&mdash;</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>Net worth</span>
+                                    <b id="nwBarNet">RM 0.00</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>How healthy that is</h3>
+                                <span class="block-note" id="nwHealthNote">&mdash;</span>
+                            </div>
+
+                            <div class="assume-grid">
+                                <div class="field">
+                                    <label for="nwExpenses">Monthly spending</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="nwExpenses" inputmode="decimal" min="0" step="100" placeholder="3,000">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="nwIncome">Monthly income</label>
+                                    <div class="money-input money-input-sm">
+                                        <span class="prefix">RM</span>
+                                        <input type="number" id="nwIncome" inputmode="decimal" min="0" step="100" placeholder="6,000">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="nwAge">Your age</label>
+                                    <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                                        <span class="prefix">yrs</span>
+                                        <input type="number" id="nwAge" inputmode="numeric" min="16" max="90" step="1" placeholder="32">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span>Money you could reach this week</span>
+                                    <b id="nwLiquidNet">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="nwCoverLabel">That covers your spending for</span>
+                                    <b id="nwCover">&mdash;</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Locked in EPF until 55</span>
+                                    <b id="nwLocked">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Debt against what you own</span>
+                                    <b id="nwDebtRatio">&mdash;</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="nwBenchLabel">Par for your age and income</span>
+                                    <b id="nwBench">&mdash;</b>
+                                </div>
+                            </div>
+
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>The par figure is the old rule of thumb &mdash; <strong>age &times; annual income &divide; 10</strong>. It is a rough marker, not a verdict: it is unkind to anyone who started late or studied long, and generous to anyone who inherited.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>The biggest pieces</h3>
+                                <span class="block-note" id="nwPiecesNote">&mdash;</span>
+                            </div>
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Line</th>
+                                            <th>Amount</th>
+                                            <th>Share of its side</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="nwPiecesBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>A net worth held up by one house and one car is not the same as the same figure held in cash and funds &mdash; one you can spend, the other you have to sell first.</span>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
