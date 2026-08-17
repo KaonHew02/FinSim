@@ -60,10 +60,41 @@ body {
     display: flex;
     flex-direction: column;
     gap: 34px;
+    transition: flex-basis .22s ease, width .22s ease, padding .22s ease;
 }
 
 .brand { display: block; padding: 0 8px; }
 .brand img { display: block; width: 100%; max-width: 186px; height: auto; }
+
+/* Scoped to .brand so it outranks `.brand img` above — a bare .brand-mark loses
+   to that rule's element selector and the mark stays on screen at full width. */
+.brand .brand-mark { display: none; }
+
+/* Sits on the border itself, half in the sidebar and half in the page, so it
+   reads as the handle for the edge rather than another item in the list. */
+.nav-toggle {
+    position: absolute;
+    top: 46px;
+    right: -13px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--paper);
+    color: var(--ink-3);
+    font-size: 11px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(20, 25, 42, .06);
+    transition: color .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.nav-toggle:hover { color: var(--brand); border-color: var(--brand); background: var(--brand-soft); }
+.nav-toggle i { transition: transform .22s ease; }
 
 /* The list is taller than a laptop screen, so it scrolls on its own and leaves
    the logo pinned. min-height:0 lets a flex child shrink below its content. */
@@ -133,6 +164,39 @@ body {
     color: var(--ink-3);
 }
 
+/* --------------------------------------------------------------------------
+   Collapsed to a rail — icons only, and the page takes the width back
+   -------------------------------------------------------------------------- */
+.app.is-rail .sidebar {
+    flex-basis: 78px;
+    width: 78px;
+    padding-left: 13px;
+    padding-right: 13px;
+    gap: 26px;
+}
+
+.app.is-rail .brand { padding: 0; }
+.app.is-rail .brand-full { display: none; }
+.app.is-rail .brand-mark { display: block; margin: 0 auto; width: 36px; }
+
+.app.is-rail .nav-toggle i { transform: rotate(180deg); }
+
+/* The headings have nothing to head once the labels are gone — a hairline
+   keeps the groups apart instead. */
+.app.is-rail .nav-label {
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+    border-top: 1px solid var(--line);
+}
+
+.app.is-rail .nav-label:not(:first-child) { margin-top: 14px; padding-top: 14px; }
+
+.app.is-rail .nav-item { justify-content: center; gap: 0; padding: 12px 0; }
+.app.is-rail .nav-text,
+.app.is-rail .nav-soon { display: none; }
+.app.is-rail .nav-item i { font-size: 18px; }
+
 /* ==========================================================================
    Main column
    ========================================================================== */
@@ -159,7 +223,7 @@ body {
 
 .split {
     display: grid;
-    grid-template-columns: 348px minmax(0, 1fr);
+    grid-template-columns: 392px minmax(0, 1fr);
     gap: 22px;
     align-items: start;
 }
@@ -1004,6 +1068,17 @@ select {
 
 @media (max-width: 900px) {
     .app { flex-direction: column; align-items: stretch; }
+
+    /* The sidebar is already a strip of icons here, so there is nothing left to
+       collapse — the rail state is switched off rather than styled. */
+    .nav-toggle { display: none; }
+
+    .app.is-rail .sidebar { flex-basis: auto; width: 100%; padding: 12px 14px; gap: 14px; }
+    .app.is-rail .brand-full { display: block; }
+    .app.is-rail .brand-mark { display: none; }
+    .app.is-rail .nav-label { display: none; }
+    .app.is-rail .nav-item { justify-content: flex-start; gap: 9px; padding: 9px 12px; }
+    .app.is-rail .nav-text { display: flex; }
 
     .sidebar {
         position: static;

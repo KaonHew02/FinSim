@@ -869,6 +869,157 @@ function debtVerdict(ratio) {
 
 /**
  * ====================================================================
+ * EMERGENCY FUND
+ * ====================================================================
+ */
+const EF_ITEMS = ['efHousing', 'efFood', 'efUtilities', 'efTransport', 'efInsurance', 'efDebt', 'efFamily', 'efOther'];
+
+/**
+ * How many months of cover a household like this should hold.
+ *
+ * Three months is the floor everyone agrees on. Everything added to it is the
+ * same argument in different clothes: the longer your income could stay off,
+ * and the more people it feeds, the longer the fund has to last.
+ */
+function suggestedCover({ earners, job, dependants }) {
+    const reasons = [];
+    let months = 3;
+
+    if (job === 'own')           { months += 3; reasons.push('you work for yourself'); }
+    else if (job === 'contract') { months += 2; reasons.push('contract work ends without notice'); }
+
+    if (earners === 'one') { months += 1; reasons.push('one income carries the house'); }
+
+    if (dependants >= 3)      { months += 2; reasons.push('three or more people depend on you'); }
+    else if (dependants >= 1) { months += 1; reasons.push('people depend on you'); }
+
+    return { months: Math.min(12, months), reasons };
+}
+
+/**
+ * ====================================================================
+ * RENT VS BUY
+ * ====================================================================
+ * The comparison only means anything if both sides are held to the same
+ * standard: the buyer's deposit and fees are money the renter still has, and
+ * every ringgit the buyer pays above the rent is a ringgit the renter invests.
+ * Anything less generous to the renter is just an argument for buying.
+ */
+
+/** Stamp duty on the transfer — the tiers in the Stamp Act, as they stand. */
+const MOT_STAMP_BANDS = [
+    { upTo: 100000,   rate: 1 },
+    { upTo: 500000,   rate: 2 },
+    { upTo: 1000000,  rate: 3 },
+    { upTo: Infinity, rate: 4 },
+];
+
+/** The solicitors' remuneration scale, charged on the price and again on the loan. */
+const LEGAL_FEE_BANDS = [
+    { upTo: 500000,   rate: 1.25 },
+    { upTo: 1000000,  rate: 1 },
+    { upTo: 3000000,  rate: 0.7 },
+    { upTo: 5000000,  rate: 0.6 },
+    { upTo: Infinity, rate: 0.5 },
+];
+
+const LOAN_STAMP_RATE  = 0.5;    // % of the loan, on the loan agreement
+const LEGAL_SST        = 8;      // % on professional fees
+const LEGAL_EXTRAS     = 2000;   // searches, registration, valuation — near enough flat
+const LEGAL_MINIMUM    = 500;    // the scale's own floor per agreement
+
+/** A fee charged in slices, each slice at its own rate. */
+function bandedFee(amount, bands) {
+    let left = Math.max(0, amount), from = 0, fee = 0;
+
+    for (const band of bands) {
+        if (left <= 0) break;
+        const slice = Math.min(left, band.upTo - from);
+        fee  += slice * band.rate / 100;
+        left -= slice;
+        from  = band.upTo;
+    }
+    return round2(fee);
+}
+
+/** Everything the keys cost on top of the deposit. */
+function buyingCosts(price, loan) {
+    const transferStamp = bandedFee(price, MOT_STAMP_BANDS);
+    const loanStamp     = round2(loan * LOAN_STAMP_RATE / 100);
+    const fees          = (price > 0 ? Math.max(LEGAL_MINIMUM, bandedFee(price, LEGAL_FEE_BANDS)) : 0) +
+                          (loan  > 0 ? Math.max(LEGAL_MINIMUM, bandedFee(loan, LEGAL_FEE_BANDS)) : 0);
+    const legal         = price > 0 ? round2(fees * (1 + LEGAL_SST / 100) + LEGAL_EXTRAS) : 0;
+
+    return { transferStamp, loanStamp, legal, total: round2(transferStamp + loanStamp + legal) };
+}
+
+/**
+ * Both paths, month by month, from the same starting wallet.
+ *
+ * The buyer's worth is what selling would leave them: the place at its price
+ * that month, less the loan and less the agent. The renter's worth is the pot —
+ * the deposit and fees they never spent, plus every month's difference, growing
+ * at whatever the money earns. A month where the rent is higher than the
+ * buyer's outlay quietly takes money back out of the pot, which is exactly what
+ * happens in real life.
+ */
+function rentVsBuy({ price, down, upfront, annualRate, tenureMonths, months, growth, upkeepPct, sellPct, rent, rentRise, investRate }) {
+    const instalment = loanInstalment(round2(price - down), annualRate, tenureMonths);
+    const rate  = annualRate / 100 / 12;
+    const grow  = growth / 100 / 12;
+    const gain  = investRate / 100 / 12;
+    const rise  = rentRise / 100 / 12;
+
+    let balance = round2(price - down);
+    let value   = price;
+    let pot     = round2(down + upfront);
+    let rentNow = rent;
+
+    let rentPaid = 0, instalmentsPaid = 0, interestPaid = 0, upkeepPaid = 0, invested = 0, potGrowth = 0;
+    let breakEven = 0;
+    const rows = [];
+
+    for (let month = 1; month <= months; month++) {
+        const interest = balance > 0 ? round2(balance * rate) : 0;
+        const due      = balance > 0 ? Math.min(instalment, round2(balance + interest)) : 0;
+        balance = round2(balance + interest - due) || 0;
+
+        const upkeep = round2(value * upkeepPct / 100 / 12);
+        value = round2(value * (1 + grow));
+
+        const earned = round2(pot * gain);
+        const spare  = round2(due + upkeep - rentNow);
+        pot = round2(pot + earned + spare);
+
+        rentPaid        = round2(rentPaid + rentNow);
+        instalmentsPaid = round2(instalmentsPaid + due);
+        interestPaid    = round2(interestPaid + interest);
+        upkeepPaid      = round2(upkeepPaid + upkeep);
+        invested        = round2(invested + spare);
+        potGrowth       = round2(potGrowth + earned);
+
+        const equity = round2(value - balance - value * sellPct / 100);
+        if (!breakEven && equity >= pot) breakEven = month;
+
+        rows.push({ month, buy: equity, rent: pot, value, balance, rentNow });
+        rentNow = round2(rentNow * (1 + rise));
+    }
+
+    const last = rows[rows.length - 1];
+    return {
+        rows, instalment, breakEven,
+        rentPaid, instalmentsPaid, interestPaid, upkeepPaid, invested, potGrowth,
+        rentLast: rows.length ? rows[rows.length - 1].rentNow : rent,
+        value:   last ? last.value : price,
+        balance: last ? last.balance : round2(price - down),
+        sellCost: last ? round2(last.value * sellPct / 100) : 0,
+        buy:     last ? last.buy : 0,
+        pot:     last ? last.rent : round2(down + upfront),
+    };
+}
+
+/**
+ * ====================================================================
  * VIEW HELPERS
  * ====================================================================
  */
@@ -878,6 +1029,8 @@ const money = (x) => 'RM ' + fmt(x);
 const pct   = (x, dp = 1) => fmt(x, dp) + '%';
 /** A figure that can legitimately come out below zero — a minus sign, not a hyphen. */
 const signed = (x) => (x < 0 ? '− ' : '') + money(Math.abs(x));
+/** A figure that is subtracted where it appears — but nothing is not a deduction. */
+const minus  = (x) => (x > 0.005 ? '− ' : '') + money(x);
 const set   = (id, text) => { const el = $(id); if (el) el.textContent = text; };
 const num   = (id) => parseFloat(($(id) || {}).value) || 0;
 const segValue = (id) => parseFloat(($(id) || {}).dataset.value);
@@ -2790,7 +2943,7 @@ function renderNetWorth() {
     set('nwAssetsHead', money(assets));
     set('nwDebtsHead', money(debts));
     set('nwTallyAssets', money(assets));
-    set('nwTallyDebts', '− ' + money(debts));
+    set('nwTallyDebts', minus(debts));
     set('nwTallyNet', signed(net));
     ['nwTallyNet', 'nwBarNet'].forEach((id) => {
         const el = $(id);
@@ -2947,6 +3100,291 @@ function paintNetWorthPieces(bodyId, pieces, net) {
     body.appendChild(frag);
 }
 
+/**
+ * ====================================================================
+ * EMERGENCY FUND SIMULATION
+ * ====================================================================
+ */
+function renderFund() {
+    const value = {};
+    let spend = 0;
+    EF_ITEMS.forEach((id) => {
+        value[id] = Math.max(0, num(id));
+        spend = round2(spend + value[id]);
+    });
+    EF_ITEMS.forEach((id) => set('efShare_' + id, value[id] > 0 && spend > 0 ? pct(value[id] / spend * 100, 0) : ''));
+
+    const months  = Math.min(24, Math.max(1, Math.round(num('efMonths')) || 6));
+    const rate    = Math.max(0, num('efReturn'));
+    const saved   = Math.max(0, num('efSaved'));
+    const monthly = Math.max(0, num('efMonthly'));
+    const target  = round2(spend * months);
+
+    const monthsSeg = $('efMonthsSeg');
+    if (monthsSeg) setSegment(monthsSeg, String(months));
+    const returnSeg = $('efReturnSeg');
+    if (returnSeg) setSegment(returnSeg, String(rate));
+
+    set('efSpendHead', money(spend));
+    set('efTallySpend', money(spend));
+    set('efTallyMonths', formatMonths(months));
+    set('efTallyTarget', money(target));
+
+    $('fund-results').classList.toggle('is-empty', spend <= 0);
+    if (spend <= 0) return;
+
+    const gap     = round2(Math.max(0, target - saved));
+    const covered = saved / spend;
+    const start   = new Date();
+
+    // --- headline tiles ---
+    set('efTargetLabel', 'Fund you need');
+    set('efTarget', money(target));
+    set('efTargetFoot', formatMonths(months) + ' × ' + money(spend) + ' a month');
+
+    set('efGapLabel', gap > 0 ? 'Still to find' : 'Past the target by');
+    set('efGap', money(gap > 0 ? gap : round2(saved - target)));
+    set('efGapFoot', gap > 0
+        ? pct(target ? saved / target * 100 : 0, 0) + ' of the way there'
+        : 'The fund is done — put the next ringgit somewhere it grows');
+
+    set('efCovered', covered >= 24 ? 'Over 2 years' : fmt(covered, 1) + ' months');
+    set('efCoveredFoot', covered <= 0
+        ? 'One bad month and it goes on a card'
+        : covered < 1
+            ? 'Less than a single month of bills'
+            : 'of the ' + months + ' months you asked for');
+
+    // --- how far along ---
+    const shareOf = (v) => (target ? Math.max(0, v) / target * 100 : 0).toFixed(3) + '%';
+    $('segEfSaved').style.width = shareOf(Math.min(saved, target));
+    $('segEfGap').style.width   = shareOf(gap);
+
+    const pctOf = (v) => pct(target ? v / target * 100 : 0, 0);
+    set('efMixNote', money(Math.min(saved, target)) + ' of ' + money(target));
+    set('legEfSaved', money(saved));
+    set('legEfSavedPct', pctOf(Math.min(saved, target)));
+    set('legEfGap', money(gap));
+    set('legEfGapPct', pctOf(gap));
+
+    const reach = gap <= 0 ? 0 : monthsToGoal({ target, opening: saved, annualRate: rate, monthly });
+    set('efWhenLabel', monthly > 0 ? 'Saving ' + money(monthly) + ' a month, you get there' : 'At what you save now, you get there');
+    set('efWhen', gap <= 0
+        ? 'Already there'
+        : monthly <= 0
+            ? 'Never — nothing is going in'
+            : reach < 0
+                ? 'Not within ' + formatMonths(GOAL_MAX_MONTHS)
+                : formatMonths(reach) + ' · ' + monthLabel(addMonths(start, reach)));
+
+    set('efNeedLabel', gap > 0 ? 'To finish it inside a year, save' : 'Nothing more needed');
+    set('efNeed', gap > 0
+        ? money(goalDeposit({ target, opening: saved, annualRate: rate, months: 12 })) + ' a month'
+        : '—');
+
+    // --- how much cover this household should hold ---
+    const advice = suggestedCover({
+        earners:    ($('efEarnersSeg') || { dataset: {} }).dataset.value || 'one',
+        job:        ($('efJobSeg') || { dataset: {} }).dataset.value || 'permanent',
+        dependants: parseInt(($('efDepsSeg') || { dataset: {} }).dataset.value, 10) || 0,
+    });
+
+    set('efAdviceNote', advice.months > 3 ? 'Above the three-month floor' : 'The three-month floor');
+    set('efAdviceWhyLabel', 'For your situation, hold');
+    set('efAdviceMonths', formatMonths(advice.months));
+    set('efAdviceAmount', money(round2(spend * advice.months)));
+    set('efAdviceGapLabel', 'Against the ' + formatMonths(months) + ' you set');
+    set('efAdviceGap', advice.months > months
+        ? formatMonths(advice.months - months) + ' short'
+        : advice.months < months
+            ? formatMonths(months - advice.months) + ' more than asked for'
+            : 'Exactly right');
+    set('efAdviceWhy', advice.reasons.length
+        ? 'Three months is the floor. You are above it because ' + listPhrase(advice.reasons) +
+          ' — the same setback simply lasts longer in a household like yours.'
+        : 'Three months is the floor: a permanent job, two incomes and nobody depending on you is the easiest case there is. Anything less certain, and the fund has to last longer.');
+
+    // --- schedule ---
+    const runMonths = gap <= 0 || monthly <= 0 || reach < 0
+        ? 12
+        : Math.min(GOAL_MAX_MONTHS, Math.max(1, reach));
+    const plan = savingsSchedule({ opening: saved, monthly, annualRate: rate, months: runMonths, target, settleLast: true });
+
+    const view = (($('efView') || {}).dataset || {}).value || 'month';
+    set('efColPeriod', view === 'year' ? 'Year' : 'Month');
+    set('efScheduleNote', plan.reached
+        ? 'Full by month ' + plan.reached + ' · ' + monthLabel(addMonths(start, plan.reached))
+        : monthly > 0 ? 'Rounded to the ringgit' : 'Nothing going in — this is just what sits there');
+
+    paintGoalSchedule('efScheduleBody', plan, view, start);
+}
+
+/** "a, b and c" — a list said out loud rather than punctuated. */
+function listPhrase(parts) {
+    if (parts.length <= 1) return parts[0] || '';
+    return parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1];
+}
+
+/**
+ * ====================================================================
+ * RENT VS BUY SIMULATION
+ * ====================================================================
+ */
+// The deposit pair works the same way as the home loan's: whichever box was
+// last touched leads, and the other follows from the price.
+let rbDownBy = 'pct';
+
+function renderRentBuy() {
+    const price   = Math.max(0, num('rbPrice'));
+    const rent    = Math.max(0, num('rbRent'));
+    const rise    = Math.max(0, num('rbRentRise'));
+    const rate    = Math.max(0, num('rbRate'));
+    const tenure  = Math.min(40, Math.max(1, Math.round(num('rbTenure')) || 35));
+    const years   = Math.min(40, Math.max(1, Math.round(num('rbYears')) || 10));
+    const growth  = Math.max(0, num('rbGrowth'));
+    const upkeep  = Math.max(0, num('rbUpkeep'));
+    const sellPct = Math.max(0, num('rbSellPct'));
+    const invest  = Math.max(0, num('rbInvest'));
+
+    const deposit = downPayment(price, 'rbDown', 'rbDownPct', rbDownBy);
+    const loan    = round2(price - deposit.down);
+    const costs   = buyingCosts(price, loan);
+    const months  = years * 12;
+
+    const downSeg = $('rbDownSeg');
+    if (downSeg) setSegment(downSeg, String(deposit.share));
+    const rateSeg = $('rbRateSeg');
+    if (rateSeg) setSegment(rateSeg, String(rate));
+    const yearsSeg = $('rbYearsSeg');
+    if (yearsSeg) setSegment(yearsSeg, String(years));
+
+    const instalment = loanInstalment(loan, rate, tenure * 12);
+    set('rbTallyLoan', money(loan));
+    set('rbTallyInstalment', money(instalment));
+    set('rbTallyCash', money(round2(deposit.down + costs.total)));
+
+    $('rentbuy-results').classList.toggle('is-empty', price <= 0);
+    if (price <= 0) return;
+
+    const plan = rentVsBuy({
+        price, down: deposit.down, upfront: costs.total,
+        annualRate: rate, tenureMonths: tenure * 12, months,
+        growth, upkeepPct: upkeep, sellPct,
+        rent, rentRise: rise, investRate: invest,
+    });
+
+    const diff  = round2(plan.buy - plan.pot);
+    const buying = diff >= 0;
+
+    // --- headline tiles ---
+    set('rbVerdictLabel', buying ? 'Buying comes out ahead by' : 'Renting comes out ahead by');
+    set('rbVerdict', money(Math.abs(diff)));
+    set('rbVerdictFoot', 'After ' + formatMonths(months) + ', with the place sold and the agent paid');
+
+    set('rbBuyNet', signed(plan.buy));
+    set('rbBuyNetFoot', money(plan.value) + ' less ' + money(plan.balance) + ' still owing');
+
+    set('rbRentNet', signed(plan.pot));
+    set('rbRentNetFoot', plan.pot >= 0
+        ? money(round2(deposit.down + costs.total)) + ' never spent, then invested at ' + pct(invest, 2)
+        : 'The rent outran the buyer’s outlay — there was nothing spare to invest');
+
+    // --- the two ends, on one scale ---
+    const scale = Math.max(plan.buy, plan.pot, 1);
+    $('segRbBuy').style.width  = (Math.max(0, plan.buy) / scale * 100).toFixed(3) + '%';
+    $('segRbRent').style.width = (Math.max(0, plan.pot) / scale * 100).toFixed(3) + '%';
+    set('rbBarBuy', signed(plan.buy));
+    set('rbBarRent', signed(plan.pot));
+    set('rbBarTitle', 'Where you stand after ' + formatMonths(months));
+    set('rbBarNote', buying ? 'Buying wins this one' : 'Renting wins this one');
+
+    const firstOutlay = round2(instalment + price * upkeep / 100 / 12);
+    set('rbBreakEven', plan.breakEven
+        ? 'in year ' + Math.ceil(plan.breakEven / 12) + ' · month ' + plan.breakEven
+        : 'not inside ' + formatMonths(months));
+    set('rbMonthlyLabel', 'Buying costs a month at the start');
+    set('rbMonthly', money(firstOutlay) + (rent > 0 ? ' · ' + money(round2(firstOutlay - rent)) + ' more than the rent' : ''));
+    set('rbDiffLabel', buying ? 'Buying is ahead by' : 'Renting is ahead by');
+    set('rbDiff', money(Math.abs(diff)));
+    const diffEl = $('rbDiff');
+    if (diffEl) diffEl.classList.toggle('is-minus', !buying);
+
+    // --- what buying costs ---
+    set('rbBuyNote', formatMonths(months) + ' of owning it');
+    set('rbCostDown', money(deposit.down));
+    set('rbCostStampLabel', 'Stamp duty on the transfer');
+    set('rbCostStamp', money(costs.transferStamp));
+    set('rbCostLoanStamp', money(costs.loanStamp));
+    set('rbCostLegal', money(costs.legal));
+    set('rbCostInstalmentLabel', months + ' instalments of ' + money(instalment));
+    set('rbCostInstalment', money(plan.instalmentsPaid));
+    set('rbCostInterest', minus(plan.interestPaid));
+    set('rbCostUpkeep', money(plan.upkeepPaid));
+    set('rbCostTotal', money(round2(deposit.down + costs.total + plan.instalmentsPaid + plan.upkeepPaid)));
+
+    set('rbEndValueLabel', 'The place is worth, at ' + pct(growth, 2) + ' a year');
+    set('rbEndValue', money(plan.value));
+    set('rbEndLoan', minus(plan.balance));
+    set('rbEndSell', minus(plan.sellCost));
+    set('rbEndEquity', signed(plan.buy));
+
+    // --- what renting costs ---
+    set('rbRentNote', rent > 0 ? 'starting at ' + money(rent) + ' a month' : 'no rent at all');
+    set('rbRentPaidLabel', formatMonths(months) + ' of rent');
+    set('rbRentPaid', money(plan.rentPaid));
+    set('rbRentLastLabel', 'Rent by the last month, at ' + pct(rise, 2) + ' a year');
+    set('rbRentLast', money(plan.rentLast));
+    set('rbRentInvested', signed(round2(deposit.down + costs.total + plan.invested)));
+    set('rbRentGrowth', money(plan.potGrowth));
+    set('rbRentPot', signed(plan.pot));
+    set('rbRentWhy', plan.invested < 0
+        ? 'The rent here runs above what the buyer pays each month, so the renter is dipping into the pot rather than adding to it — and still ' +
+          (buying ? 'loses' : 'wins') + ' by the end.'
+        : 'Renting only wins if the difference is genuinely invested. Spent instead, the renter ends up with nothing and the buyer ends up with a house.');
+
+    // --- year by year ---
+    set('rbScheduleNote', plan.breakEven
+        ? 'Buying pulls ahead in year ' + Math.ceil(plan.breakEven / 12)
+        : 'Renting stays ahead the whole way');
+    paintRentBuyTable('rbScheduleBody', plan, years);
+}
+
+/** One row a year: what each path would be worth if you walked away that year. */
+function paintRentBuyTable(bodyId, plan, years) {
+    const body = $(bodyId);
+    if (!body) return;
+    body.innerHTML = '';
+
+    const cell = (html, cls) => {
+        const td = document.createElement('td');
+        if (cls) td.className = cls;
+        td.innerHTML = html;
+        return td;
+    };
+
+    const breakYear = plan.breakEven ? Math.ceil(plan.breakEven / 12) : 0;
+    const frag = document.createDocumentFragment();
+
+    for (let year = 1; year <= years; year++) {
+        const row = plan.rows[Math.min(plan.rows.length, year * 12) - 1];
+        if (!row) break;
+
+        const gap = round2(row.buy - row.rent);
+        const tr  = document.createElement('tr');
+        tr.className = 'band-row';
+        if (year === breakYear) tr.classList.add('is-goal');
+
+        tr.appendChild(cell('<strong>Year ' + year + '</strong><small>' +
+            (year === breakYear ? 'buying pulls ahead' : gap >= 0 ? 'buying ahead' : 'renting ahead') + '</small>'));
+        tr.appendChild(cell(fmt(row.buy, 0), 'is-strong'));
+        tr.appendChild(cell(fmt(row.rent, 0), 'is-strong'));
+        tr.appendChild(cell((gap < 0 ? '− ' : '+ ') + fmt(Math.abs(gap), 0), gap < 0 ? 'is-minus' : 'is-growth'));
+        frag.appendChild(tr);
+    }
+
+    body.appendChild(frag);
+}
+
 function renderAll() {
     renderPcb();
     renderEpf();
@@ -2959,6 +3397,8 @@ function renderAll() {
     renderCompound();
     renderRetirement();
     renderNetWorth();
+    renderFund();
+    renderRentBuy();
 }
 
 /**
@@ -2979,6 +3419,8 @@ const MODULES = {
     'compound-module':  { title: 'Compound Interest Calculator', sub: 'What you put in, what the money earns on its own, and how far apart those two end up.' },
     'retire-module':    { title: 'Retirement Calculator', sub: 'What the life you want after work actually costs, and whether you are on course for it.' },
     'networth-module':  { title: 'Net Worth Calculator', sub: 'Everything you own, minus everything you owe — the one number that says where you actually stand.' },
+    'fund-module':      { title: 'Emergency Fund Calculator', sub: 'How much you need standing by before a bad month can turn into a bad year.' },
+    'rentbuy-module':   { title: 'Rent vs Buy Calculator', sub: 'Both paths costed the same way, down to the stamp duty and the agent’s fee.' },
 };
 
 function switchModule(moduleId) {
@@ -3052,6 +3494,22 @@ const FORM_DEFAULTS = {
         { nwExpenses: '', nwIncome: '', nwAge: '' },
         ...NET_WORTH_ITEMS.map((item) => ({ [item.id]: '' })),
     ),
+    fund: Object.assign(
+        {
+            efMonths: '6', efMonthsSeg: '6',
+            efEarnersSeg: 'one', efJobSeg: 'permanent', efDepsSeg: '0',
+            efSaved: '', efMonthly: '',
+            efReturn: '2.5', efReturnSeg: '2.5', efView: 'month',
+        },
+        ...EF_ITEMS.map((id) => ({ [id]: '' })),
+    ),
+    rentbuy: {
+        rbRent: '', rbRentRise: '3',
+        rbPrice: '', rbDown: '', rbDownPct: '10', rbDownSeg: '10',
+        rbRate: '4', rbRateSeg: '4', rbTenure: '35',
+        rbYears: '10', rbYearsSeg: '10',
+        rbGrowth: '3', rbUpkeep: '1', rbSellPct: '3', rbInvest: '5',
+    },
 };
 
 function resetForm(which) {
@@ -3082,6 +3540,7 @@ function resetForm(which) {
 
     if (which === 'personal') plTenureBy = 'years';
     if (which === 'goal') goalTimeBy = 'months';
+    if (which === 'rentbuy') rbDownBy = 'pct';
 
     if (which === 'epf') {
         epfRates = [];
@@ -3127,6 +3586,24 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('click', () => switchModule(item.dataset.module));
     });
 
+    // Collapse the sidebar to a rail. With the labels gone the icons carry no
+    // name of their own, so each one borrows its heading as a tooltip — and
+    // gives it back on the way out, where the label is right there to read.
+    const navToggle = $('navToggle');
+    if (navToggle) {
+        navToggle.addEventListener('click', () => {
+            const rail = document.querySelector('.app').classList.toggle('is-rail');
+            navToggle.setAttribute('aria-expanded', String(!rail));
+            navToggle.title = rail ? 'Expand the sidebar' : 'Collapse the sidebar';
+
+            document.querySelectorAll('.nav-item').forEach((item) => {
+                const name = item.querySelector('strong');
+                if (rail && name) item.title = name.textContent;
+                else item.removeAttribute('title');
+            });
+        });
+    }
+
     document.querySelectorAll('.seg').forEach((seg) => {
         seg.addEventListener('click', (event) => {
             const btn = event.target.closest('button[data-val]');
@@ -3162,6 +3639,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (seg.id === 'rtLiveSeg' && $('rtLiveTo'))       $('rtLiveTo').value    = btn.dataset.val;
             if (seg.id === 'rtReturnSeg' && $('rtReturn'))     $('rtReturn').value    = btn.dataset.val;
             if (seg.id === 'rtInflationSeg' && $('rtInflation')) $('rtInflation').value = btn.dataset.val;
+            if (seg.id === 'efMonthsSeg' && $('efMonths'))     $('efMonths').value    = btn.dataset.val;
+            if (seg.id === 'efReturnSeg' && $('efReturn'))     $('efReturn').value    = btn.dataset.val;
+            if (seg.id === 'rbDownSeg' && $('rbDownPct')) {
+                $('rbDownPct').value = btn.dataset.val;
+                rbDownBy = 'pct';                         // the preset is a percentage, so let it lead
+            }
+            if (seg.id === 'rbRateSeg' && $('rbRate'))         $('rbRate').value      = btn.dataset.val;
+            if (seg.id === 'rbYearsSeg' && $('rbYears'))       $('rbYears').value     = btn.dataset.val;
             renderAll();
         });
     });
@@ -3190,6 +3675,8 @@ document.addEventListener('DOMContentLoaded', () => {
     leadWith('plMonths', 'months', (m) => { plTenureBy = m; });
     leadWith('goalMonths', 'months', (m) => { goalTimeBy = m; });
     leadWith('goalDate', 'date', (m) => { goalTimeBy = m; });
+    leadWith('rbDown', 'rm', (m) => { rbDownBy = m; });
+    leadWith('rbDownPct', 'pct', (m) => { rbDownBy = m; });
 
     document.querySelectorAll('.panel input, .panel select, #reliefGroups input, .assume-grid input').forEach((el) => {
         el.addEventListener('input', renderAll);

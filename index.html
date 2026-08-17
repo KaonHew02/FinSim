@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinSim — Malaysia Money Calculators</title>
-    <link rel="icon" href="FinSimLogo-icon.png">
+    <link rel="icon" type="image/png" href="FinSimLogo-mark.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,17 +13,22 @@
 <div class="app">
 
     <aside class="sidebar">
+        <button type="button" class="nav-toggle" id="navToggle" aria-expanded="true" aria-controls="mainNav" title="Collapse the sidebar">
+            <i class="bi bi-chevron-double-left"></i>
+        </button>
+
         <a class="brand" href="#" aria-label="FinSim">
-            <img src="FinSimLogo-trim.png" alt="FinSim — Simulate Your Financial Future">
+            <img class="brand-full" src="FinSimLogo-trim.png" alt="FinSim — Simulate Your Financial Future">
+            <img class="brand-mark" src="FinSimLogo-mark.png" alt="FinSim">
         </a>
 
-        <nav class="nav">
+        <nav class="nav" id="mainNav">
             <p class="nav-label">Tax</p>
 
             <button type="button" class="nav-item is-active" data-module="pcb-module">
                 <i class="bi bi-calculator-fill"></i>
                 <span class="nav-text">
-                    <strong>PCB Calculator</strong>
+                    <strong>PCB</strong>
                     <small>Monthly salary deductions</small>
                 </span>
             </button>
@@ -31,7 +36,7 @@
             <button type="button" class="nav-item" data-module="tax-module">
                 <i class="bi bi-receipt-cutoff"></i>
                 <span class="nav-text">
-                    <strong>Income Tax Calculator</strong>
+                    <strong>Income Tax</strong>
                     <small>Annual assessment</small>
                 </span>
             </button>
@@ -114,22 +119,20 @@
                 </span>
             </button>
 
-            <button type="button" class="nav-item is-soon" disabled>
+            <button type="button" class="nav-item" data-module="fund-module">
                 <i class="bi bi-shield-fill-check"></i>
                 <span class="nav-text">
                     <strong>Emergency Fund</strong>
                     <small>Months of cover</small>
                 </span>
-                <span class="nav-soon">Soon</span>
             </button>
 
-            <button type="button" class="nav-item is-soon" disabled>
+            <button type="button" class="nav-item" data-module="rentbuy-module">
                 <i class="bi bi-signpost-split-fill"></i>
                 <span class="nav-text">
                     <strong>Rent vs Buy</strong>
                     <small>Which costs less</small>
                 </span>
-                <span class="nav-soon">Soon</span>
             </button>
         </nav>
 
@@ -2602,6 +2605,657 @@
                             <div class="mini-note">
                                 <i class="bi bi-info-circle"></i>
                                 <span>A net worth held up by one house and one car is not the same as the same figure held in cash and funds &mdash; one you can spend, the other you have to sell first.</span>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== EMERGENCY FUND MODULE ===================== -->
+        <section id="fund-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="fund-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>Your safety net</h2>
+                        <button type="button" class="ghost-btn" data-reset="fund">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="nw-side">
+                        <div class="nw-side-head">
+                            <h3>What you cannot stop paying</h3>
+                            <b id="efSpendHead">RM 0.00</b>
+                        </div>
+                        <div class="nw-group">
+                            <div class="nw-row">
+                                <div class="nw-label">
+                                    <strong>Rent or housing loan</strong>
+                                    <small>the roof comes first</small>
+                                </div>
+                                <div class="money-input money-input-sm">
+                                    <span class="prefix">RM</span>
+                                    <input type="number" id="efHousing" inputmode="decimal" min="0" step="100" placeholder="0" aria-label="Rent or housing loan">
+                                </div>
+                                <div class="nw-share" id="efShare_efHousing"></div>
+                            </div>
+                            <div class="nw-row">
+                                <div class="nw-label">
+                                    <strong>Food &amp; groceries</strong>
+                                    <small>cooking at home, not eating out</small>
+                                </div>
+                                <div class="money-input money-input-sm">
+                                    <span class="prefix">RM</span>
+                                    <input type="number" id="efFood" inputmode="decimal" min="0" step="50" placeholder="0" aria-label="Food and groceries">
+                                </div>
+                                <div class="nw-share" id="efShare_efFood"></div>
+                            </div>
+                            <div class="nw-row">
+                                <div class="nw-label">
+                                    <strong>Utilities &amp; bills</strong>
+                                    <small>electricity, water, phone, internet</small>
+                                </div>
+                                <div class="money-input money-input-sm">
+                                    <span class="prefix">RM</span>
+                                    <input type="number" id="efUtilities" inputmode="decimal" min="0" step="50" placeholder="0" aria-label="Utilities and bills">
+                                </div>
+                                <div class="nw-share" id="efShare_efUtilities"></div>
+                            </div>
+                            <div class="nw-row">
+                                <div class="nw-label">
+                                    <strong>Transport</strong>
+                                    <small>car loan, petrol, tolls, fares</small>
+                                </div>
+                                <div class="money-input money-input-sm">
+                                    <span class="prefix">RM</span>
+                                    <input type="number" id="efTransport" inputmode="decimal" min="0" step="50" placeholder="0" aria-label="Transport">
+                                </div>
+                                <div class="nw-share" id="efShare_efTransport"></div>
+                            </div>
+                            <div class="nw-row">
+                                <div class="nw-label">
+                                    <strong>Insurance &amp; medical</strong>
+                                    <small>premiums you must keep paying</small>
+                                </div>
+                                <div class="money-input money-input-sm">
+                                    <span class="prefix">RM</span>
+                                    <input type="number" id="efInsurance" inputmode="decimal" min="0" step="50" placeholder="0" aria-label="Insurance and medical">
+                                </div>
+                                <div class="nw-share" id="efShare_efInsurance"></div>
+                            </div>
+                            <div class="nw-row">
+                                <div class="nw-label">
+                                    <strong>Other loans &amp; cards</strong>
+                                    <small>the minimum that keeps you out of trouble</small>
+                                </div>
+                                <div class="money-input money-input-sm">
+                                    <span class="prefix">RM</span>
+                                    <input type="number" id="efDebt" inputmode="decimal" min="0" step="50" placeholder="0" aria-label="Other loans and cards">
+                                </div>
+                                <div class="nw-share" id="efShare_efDebt"></div>
+                            </div>
+                            <div class="nw-row">
+                                <div class="nw-label">
+                                    <strong>Children &amp; parents</strong>
+                                    <small>childcare, school, money sent home</small>
+                                </div>
+                                <div class="money-input money-input-sm">
+                                    <span class="prefix">RM</span>
+                                    <input type="number" id="efFamily" inputmode="decimal" min="0" step="50" placeholder="0" aria-label="Children and parents">
+                                </div>
+                                <div class="nw-share" id="efShare_efFamily"></div>
+                            </div>
+                            <div class="nw-row">
+                                <div class="nw-label">
+                                    <strong>Other essentials</strong>
+                                    <small>anything else that does not stop</small>
+                                </div>
+                                <div class="money-input money-input-sm">
+                                    <span class="prefix">RM</span>
+                                    <input type="number" id="efOther" inputmode="decimal" min="0" step="50" placeholder="0" aria-label="Other essentials">
+                                </div>
+                                <div class="nw-share" id="efShare_efOther"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Months of cover you want</label>
+                        <div class="seg" id="efMonthsSeg" data-value="6">
+                            <button type="button" data-val="3">3</button>
+                            <button type="button" data-val="6" class="is-on">6</button>
+                            <button type="button" data-val="9">9</button>
+                            <button type="button" data-val="12">12</button>
+                        </div>
+                        <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                            <span class="prefix">mth</span>
+                            <input type="number" id="efMonths" inputmode="numeric" min="1" max="24" step="1" value="6" aria-label="Months of cover">
+                        </div>
+                        <p class="hint" id="efSuggestHint">Three months is the floor, six is the common answer &mdash; the three questions below say which end you belong at.</p>
+                    </div>
+
+                    <div class="field">
+                        <label>Who brings money in</label>
+                        <div class="seg" id="efEarnersSeg" data-value="one">
+                            <button type="button" data-val="one" class="is-on">One income</button>
+                            <button type="button" data-val="two">Two incomes</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>How steady the work is</label>
+                        <div class="seg" id="efJobSeg" data-value="permanent">
+                            <button type="button" data-val="permanent" class="is-on">Permanent</button>
+                            <button type="button" data-val="contract">Contract</button>
+                            <button type="button" data-val="own">Own business</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>People who depend on you</label>
+                        <div class="seg" id="efDepsSeg" data-value="0">
+                            <button type="button" data-val="0" class="is-on">None</button>
+                            <button type="button" data-val="2">1&ndash;2</button>
+                            <button type="button" data-val="3">3 or more</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="efSaved">Set aside for emergencies already</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="efSaved" inputmode="decimal" min="0" step="500" placeholder="0">
+                        </div>
+                        <p class="hint">Only money you could take out today without asking anyone. Not EPF, not a fixed deposit you would break, not the ASB you meant to keep.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="efMonthly">Putting aside each month</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="efMonthly" inputmode="decimal" min="0" step="50" placeholder="500">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="efReturn">What it earns where you keep it <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="efReturn" inputmode="decimal" min="0" max="10" step="0.05" value="2.5">
+                        </div>
+                        <div class="seg" id="efReturnSeg" data-value="2.5">
+                            <button type="button" data-val="0">0%</button>
+                            <button type="button" data-val="2.5" class="is-on">2.5%</button>
+                            <button type="button" data-val="3.5">3.5%</button>
+                        </div>
+                        <p class="hint">An emergency fund is not an investment &mdash; it is insurance you happen to own. Keep it somewhere boring you can reach the same day, and take whatever small return comes with that.</p>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Essential spending a month</span>
+                            <b id="efTallySpend">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span id="efTallyMonthsLabel">Cover you asked for</span>
+                            <b id="efTallyMonths">&mdash;</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Fund you are aiming at</span>
+                            <b id="efTallyTarget">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>This is the fund that stops a bad month turning into a bad decade. Without it, the first setback goes onto a credit card at 15&ndash;18% and stays there.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="fund-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Fill in what you must pay each month to see the fund you need.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label" id="efTargetLabel">Fund you need</span>
+                                <span class="stat-value" id="efTarget">RM 0.00</span>
+                                <span class="stat-foot" id="efTargetFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label" id="efGapLabel">Still to find</span>
+                                <span class="stat-value" id="efGap">RM 0.00</span>
+                                <span class="stat-foot" id="efGapFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">You are covered for</span>
+                                <span class="stat-value" id="efCovered">&mdash;</span>
+                                <span class="stat-foot" id="efCoveredFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>How far along you are</h3>
+                                <span class="block-note" id="efMixNote">&mdash;</span>
+                            </div>
+                            <div class="dist">
+                                <span class="dist-sos" id="segEfSaved"></span>
+                                <span class="dist-amber" id="segEfGap"></span>
+                            </div>
+                            <ul class="legend">
+                                <li><i class="dot dot-sos"></i>Already set aside<b id="legEfSaved">RM 0.00</b><span class="legend-pct" id="legEfSavedPct">&mdash;</span></li>
+                                <li><i class="dot dot-amber"></i>Still to find<b id="legEfGap">RM 0.00</b><span class="legend-pct" id="legEfGapPct">&mdash;</span></li>
+                            </ul>
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="efWhenLabel">At what you save now, you get there</span>
+                                    <b id="efWhen">&mdash;</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="efNeedLabel">To finish it inside a year, save</span>
+                                    <b id="efNeed">&mdash;</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>How much cover you actually need</h3>
+                                <span class="block-note" id="efAdviceNote">&mdash;</span>
+                            </div>
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="efAdviceWhyLabel">For your situation</span>
+                                    <b id="efAdviceMonths">&mdash;</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Which comes to</span>
+                                    <b id="efAdviceAmount">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="efAdviceGapLabel">Against what you set</span>
+                                    <b id="efAdviceGap">&mdash;</b>
+                                </div>
+                            </div>
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span id="efAdviceWhy">Three months covers a gap between jobs. Six covers a real one. Longer if your income is lumpy, if nobody else earns, or if people depend on you &mdash; because those are the households where a setback lasts longest.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Month by month</h3>
+                                <div class="block-actions">
+                                    <span class="block-note" id="efScheduleNote">&mdash;</span>
+                                    <div class="seg seg-sm" id="efView" data-value="month">
+                                        <button type="button" data-val="year">Yearly</button>
+                                        <button type="button" data-val="month" class="is-on">Monthly</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th id="efColPeriod">Month</th>
+                                            <th id="efColPaid">Put aside</th>
+                                            <th>Growth</th>
+                                            <th>Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="efScheduleBody"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== RENT VS BUY MODULE ===================== -->
+        <section id="rentbuy-module" class="module">
+            <div class="split">
+
+                <form class="card panel" id="rentbuy-form" autocomplete="off" onsubmit="return false;">
+                    <div class="panel-head">
+                        <h2>Rent or buy</h2>
+                        <button type="button" class="ghost-btn" data-reset="rentbuy">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="field">
+                        <label for="rbRent">Rent for a place like it <span class="per">a month</span></label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="rbRent" inputmode="decimal" min="0" step="100" placeholder="1,800">
+                        </div>
+                        <p class="hint">Compare like for like &mdash; the rent on the sort of place you would actually buy, not a smaller one you would settle for.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rbRentRise">Rent goes up <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="rbRentRise" inputmode="decimal" min="0" max="20" step="0.1" value="3">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="rbPrice">Price of the place</label>
+                        <div class="money-input">
+                            <span class="prefix">RM</span>
+                            <input type="number" id="rbPrice" inputmode="decimal" min="0" step="10000" placeholder="500,000">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Down payment</label>
+                        <div class="seg" id="rbDownSeg" data-value="10">
+                            <button type="button" data-val="0">0%</button>
+                            <button type="button" data-val="10" class="is-on">10%</button>
+                            <button type="button" data-val="20">20%</button>
+                            <button type="button" data-val="30">30%</button>
+                        </div>
+                        <div class="pct-pair">
+                            <div class="money-input money-input-sm">
+                                <span class="prefix">RM</span>
+                                <input type="number" id="rbDown" inputmode="decimal" min="0" step="1000" placeholder="50,000" aria-label="Down payment in ringgit">
+                            </div>
+                            <div class="money-input money-input-sm is-suffix">
+                                <span class="prefix">%</span>
+                                <input type="number" id="rbDownPct" inputmode="decimal" min="0" max="100" step="0.5" value="10" aria-label="Down payment percentage">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="rbRate">Loan rate <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="rbRate" inputmode="decimal" min="0" max="20" step="0.05" value="4">
+                        </div>
+                        <div class="seg" id="rbRateSeg" data-value="4">
+                            <button type="button" data-val="3.5">3.5%</button>
+                            <button type="button" data-val="4" class="is-on">4%</button>
+                            <button type="button" data-val="4.5">4.5%</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="rbTenure">Loan term <span class="per">years</span></label>
+                        <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                            <span class="prefix">yrs</span>
+                            <input type="number" id="rbTenure" inputmode="numeric" min="1" max="40" step="1" value="35">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>How long you stay</label>
+                        <div class="seg" id="rbYearsSeg" data-value="10">
+                            <button type="button" data-val="3">3 yrs</button>
+                            <button type="button" data-val="5">5 yrs</button>
+                            <button type="button" data-val="10" class="is-on">10 yrs</button>
+                            <button type="button" data-val="20">20 yrs</button>
+                        </div>
+                        <div class="money-input money-input-sm is-suffix is-suffix-lg">
+                            <span class="prefix">yrs</span>
+                            <input type="number" id="rbYears" inputmode="numeric" min="1" max="40" step="1" value="10" aria-label="Years you stay">
+                        </div>
+                        <p class="hint">This is the question that decides it. Buying costs a fortune to get into and a fair bit to get out of, and only time spreads that thin enough to be worth it.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rbGrowth">Property goes up <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="rbGrowth" inputmode="decimal" min="0" max="20" step="0.1" value="3">
+                        </div>
+                        <p class="hint">Malaysian house prices have crawled at roughly 1&ndash;3% a year since 2015, and plenty of sub-sale units have gone nowhere at all. A figure above 5% is a hope, not a plan.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rbUpkeep">Upkeep <span class="per">a year, % of value</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="rbUpkeep" inputmode="decimal" min="0" max="10" step="0.1" value="1">
+                        </div>
+                        <p class="hint">Quit rent, assessment, fire insurance, MRTA, service charge and the repairs a landlord would otherwise be doing. About 1% of the value a year for a landed home, more for a strata unit with a pool.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rbSellPct">Costs to sell <span class="per">% of price</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="rbSellPct" inputmode="decimal" min="0" max="15" step="0.1" value="3">
+                        </div>
+                        <p class="hint">Agent's fee is capped at 3% and legal work sits on top. RPGT is not counted here &mdash; it is 30% of the gain if you sell inside three years, tapering to nil from the sixth.</p>
+                    </div>
+
+                    <div class="field">
+                        <label for="rbInvest">If you rent, spare cash earns <span class="per">a year</span></label>
+                        <div class="money-input money-input-sm is-suffix">
+                            <span class="prefix">%</span>
+                            <input type="number" id="rbInvest" inputmode="decimal" min="0" max="20" step="0.05" value="5">
+                        </div>
+                        <p class="hint">The heart of the comparison. A renter who spends the deposit has not really rented cheaply &mdash; this assumes every ringgit the buyer sinks in, and every ringgit of the monthly difference, is invested instead.</p>
+                    </div>
+
+                    <div class="tally">
+                        <div class="tally-row">
+                            <span>Loan you would take</span>
+                            <b id="rbTallyLoan">RM 0.00</b>
+                        </div>
+                        <div class="tally-row">
+                            <span>Instalment</span>
+                            <b id="rbTallyInstalment">RM 0.00</b>
+                        </div>
+                        <div class="tally-row is-total">
+                            <span>Cash needed on day one</span>
+                            <b id="rbTallyCash">RM 0.00</b>
+                        </div>
+                    </div>
+
+                    <div class="mini-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Stamp duty, legal fees and disbursements are worked out on the Malaysian scales. First-home exemptions can wipe out the stamp duty under RM500,000 &mdash; if that is you, the buying side is cheaper than shown.</span>
+                    </div>
+                </form>
+
+                <div class="results" id="rentbuy-results">
+
+                    <div class="empty-note">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <p>Enter a price and a rent to see which one leaves you better off.</p>
+                    </div>
+
+                    <div class="results-body">
+
+                        <div class="stats">
+                            <div class="stat stat-hero">
+                                <span class="stat-label" id="rbVerdictLabel">Buying comes out ahead by</span>
+                                <span class="stat-value" id="rbVerdict">RM 0.00</span>
+                                <span class="stat-foot" id="rbVerdictFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">If you buy, you end up with</span>
+                                <span class="stat-value" id="rbBuyNet">RM 0.00</span>
+                                <span class="stat-foot" id="rbBuyNetFoot">&mdash;</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">If you rent, you end up with</span>
+                                <span class="stat-value" id="rbRentNet">RM 0.00</span>
+                                <span class="stat-foot" id="rbRentNetFoot">&mdash;</span>
+                            </div>
+                        </div>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3 id="rbBarTitle">Where you stand at the end</h3>
+                                <span class="block-note" id="rbBarNote">&mdash;</span>
+                            </div>
+
+                            <div class="nw-bar">
+                                <div class="nw-bar-top">
+                                    <span>Buying</span>
+                                    <b id="rbBarBuy">RM 0.00</b>
+                                </div>
+                                <div class="dist">
+                                    <span class="dist-net" id="segRbBuy"></span>
+                                </div>
+                            </div>
+
+                            <div class="nw-bar">
+                                <div class="nw-bar-top">
+                                    <span>Renting and investing the difference</span>
+                                    <b id="rbBarRent">RM 0.00</b>
+                                </div>
+                                <div class="dist">
+                                    <span class="dist-sos" id="segRbRent"></span>
+                                </div>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span>Buying pulls ahead</span>
+                                    <b id="rbBreakEven">&mdash;</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="rbMonthlyLabel">Buying costs a month at the start</span>
+                                    <b id="rbMonthly">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span id="rbDiffLabel">Difference after the years above</span>
+                                    <b id="rbDiff">RM 0.00</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What buying really costs</h3>
+                                <span class="block-note" id="rbBuyNote">&mdash;</span>
+                            </div>
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span>Down payment</span>
+                                    <b id="rbCostDown">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="rbCostStampLabel">Stamp duty on the transfer</span>
+                                    <b id="rbCostStamp">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Stamp duty on the loan</span>
+                                    <b id="rbCostLoanStamp">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Legal fees &amp; disbursements</span>
+                                    <b id="rbCostLegal">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="rbCostInstalmentLabel">Instalments paid</span>
+                                    <b id="rbCostInstalment">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Of that, interest to the bank</span>
+                                    <b id="rbCostInterest" class="is-minus">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Upkeep, tax &amp; insurance</span>
+                                    <b id="rbCostUpkeep">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>Out of pocket all in</span>
+                                    <b id="rbCostTotal">RM 0.00</b>
+                                </div>
+                            </div>
+
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="rbEndValueLabel">The place is worth</span>
+                                    <b id="rbEndValue">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Loan still owing</span>
+                                    <b id="rbEndLoan" class="is-minus">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Agent &amp; legal to sell</span>
+                                    <b id="rbEndSell" class="is-minus">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>What you walk away with</span>
+                                    <b id="rbEndEquity">RM 0.00</b>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>What renting really costs</h3>
+                                <span class="block-note" id="rbRentNote">&mdash;</span>
+                            </div>
+                            <div class="tally">
+                                <div class="tally-row">
+                                    <span id="rbRentPaidLabel">Rent paid</span>
+                                    <b id="rbRentPaid">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span id="rbRentLastLabel">Rent by the last month</span>
+                                    <b id="rbRentLast">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Invested instead of buying</span>
+                                    <b id="rbRentInvested">RM 0.00</b>
+                                </div>
+                                <div class="tally-row">
+                                    <span>Growth on that</span>
+                                    <b id="rbRentGrowth">RM 0.00</b>
+                                </div>
+                                <div class="tally-row is-total">
+                                    <span>What you are holding</span>
+                                    <b id="rbRentPot">RM 0.00</b>
+                                </div>
+                            </div>
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span id="rbRentWhy">Renting only wins if the difference is genuinely invested. Spent instead, the renter ends the decade with nothing and the buyer ends it with a house.</span>
+                            </div>
+                        </section>
+
+                        <section class="card block">
+                            <div class="block-head">
+                                <h3>Year by year</h3>
+                                <span class="block-note" id="rbScheduleNote">&mdash;</span>
+                            </div>
+                            <div class="table-wrap table-tall">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Year</th>
+                                            <th>If you buy</th>
+                                            <th>If you rent</th>
+                                            <th>Difference</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rbScheduleBody"></tbody>
+                                </table>
+                            </div>
+                            <div class="mini-note">
+                                <i class="bi bi-info-circle"></i>
+                                <span>Each row is what you would be worth if you sold up and walked away that year &mdash; the house net of the loan and the selling costs, against the renter's pot.</span>
                             </div>
                         </section>
 
