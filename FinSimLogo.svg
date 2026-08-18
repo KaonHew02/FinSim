@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 252 60" width="252" height="60" role="img" aria-label="FinSim — Simulate your financial future">
+  <title>FinSim — Simulate your financial future</title>
+  <defs>
+    <linearGradient id="finsimTileWide" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a58bd"/>
+      <stop offset="1" stop-color="#00368a"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(0,6) scale(0.96)">
+    <rect width="48" height="48" rx="13" fill="url(#finsimTileWide)"/>
+    <g fill="#ffffff">
+      <rect x="10" y="28" width="6.5" height="11" rx="3.25" opacity=".45"/>
+      <rect x="20.75" y="22" width="6.5" height="17" rx="3.25" opacity=".68"/>
+      <rect x="31.5" y="14" width="6.5" height="25" rx="3.25"/>
+    </g>
+    <rect x="9" y="38.4" width="30" height="1.6" rx=".8" fill="#ffffff" opacity=".3"/>
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5 27 17 22.5 27 17 38 8.5" stroke="#00368a" stroke-width="4.8" opacity=".85"/>
+      <path d="M9.5 27 17 22.5 27 17 38 8.5" stroke="#5fe3c0" stroke-width="3"/>
+    </g>
+    <circle cx="38" cy="8.5" r="4.2" fill="#00368a" opacity=".85"/>
+    <circle cx="38" cy="8.5" r="2.9" fill="#5fe3c0"/>
+  </g>
+  <text x="60" y="35" font-family="Segoe UI, Inter, Helvetica Neue, Arial, sans-serif" font-size="29" font-weight="700" letter-spacing="-0.6">
+    <tspan fill="#004baf">Fin</tspan><tspan fill="#14192a">Sim</tspan>
+  </text>
+  <rect x="61" y="41" width="178" height="1.2" rx=".6" fill="#004baf" opacity=".32"/>
+  <text x="61" y="53.5" font-family="Segoe UI, Inter, Helvetica Neue, Arial, sans-serif" font-size="7.4" font-weight="600" letter-spacing="1.95" fill="#7c869a">SIMULATE YOUR FINANCIAL FUTURE</text>
+</svg>

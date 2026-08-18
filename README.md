@@ -12,6 +12,7 @@ FinSim/
 ├── index.html      the page — sidebar + one section per calculator
 ├── app.js          all the maths, then the render code
 ├── style.css       design tokens, components, responsive rules
+├── FinSimLogo.svg  the logo — mark + wordmark (FinSimMark.svg is the mark alone)
 ├── MODULES.md      the deep version of this document
 └── README.md       you are here
 ```
