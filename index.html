@@ -13,9 +13,16 @@
 
 <div class="app">
 
-    <aside class="sidebar">
+    <!-- Taps the drawer shut on a phone; invisible and inert on a desktop. -->
+    <div class="nav-scrim" id="navScrim"></div>
+
+    <aside class="sidebar" id="sidebar">
         <button type="button" class="nav-toggle" id="navToggle" aria-expanded="true" aria-controls="mainNav" title="Collapse the sidebar">
             <i class="bi bi-chevron-double-left"></i>
+        </button>
+
+        <button type="button" class="nav-close" id="navClose" aria-label="Close the menu">
+            <i class="bi bi-x-lg"></i>
         </button>
 
         <a class="brand" href="#" aria-label="FinSim">
@@ -140,6 +147,15 @@
     </aside>
 
     <main class="main">
+
+        <!-- Phone-only header: the menu button plus the logo the sidebar used to
+             carry, so the brand stays on screen once the nav slides away. -->
+        <div class="mobile-bar">
+            <button type="button" class="mobile-menu" id="navOpen" aria-label="Open the menu" aria-expanded="false" aria-controls="sidebar">
+                <i class="bi bi-list"></i>
+            </button>
+            <img class="mobile-brand" src="FinSimLogo.svg" alt="FinSim">
+        </div>
 
         <header class="topbar">
             <h1 id="page-title">PCB Calculator</h1>

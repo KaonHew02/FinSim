@@ -3581,9 +3581,43 @@ function setSegment(seg, value) {
     });
 }
 
+/* Drawer state lives on .app so CSS can drive it, and the button keeps its own
+   aria-expanded in step for anything reading the page out loud. */
+function setNav(open) {
+    document.querySelector('.app').classList.toggle('is-nav-open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+    const btn = $('navOpen');
+    if (btn) btn.setAttribute('aria-expanded', String(open));
+}
+
+function closeNav() { setNav(false); }
+
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-item').forEach((item) => {
-        item.addEventListener('click', () => switchModule(item.dataset.module));
+        item.addEventListener('click', () => {
+            switchModule(item.dataset.module);
+            closeNav();                           // on a phone the drawer is covering the answer
+        });
+    });
+
+    // Off-canvas drawer for phones. The class does the animating; the body lock
+    // stops the page behind it from scrolling while the drawer is over it.
+    const navOpen = $('navOpen');
+    const navClose = $('navClose');
+    const navScrim = $('navScrim');
+
+    if (navOpen) navOpen.addEventListener('click', () => setNav(true));
+    if (navClose) navClose.addEventListener('click', () => setNav(false));
+    if (navScrim) navScrim.addEventListener('click', () => setNav(false));
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setNav(false);
+    });
+
+    // Rotating to a tablet width puts the sidebar back on the page for good, so
+    // the drawer's scroll lock has to come off with it.
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 900) setNav(false);
     });
 
     // Collapse the sidebar to a rail. With the labels gone the icons carry no
