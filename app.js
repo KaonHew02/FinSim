@@ -3783,7 +3783,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ask the browser not to throw the records away when the disk gets
         // tight, and only once there is something worth keeping — Firefox
         // turns this into a permission prompt.
-        if (typeof FSStore === 'undefined') return;
+        if (typeof FSStore === 'undefined') {
+            window.FSReady = true;
+            document.dispatchEvent(new Event('finsim:ready'));
+            return;
+        }
 
         // What the browser is actually offering, rather than the five-megabyte
         // guess the store starts with.
@@ -3794,6 +3798,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // permission prompt, and a prompt about an empty form is a prompt
         // about nothing.
         if (FSStore.persist && storedRaw('finsim.inputs.v1')) FSStore.persist();
+
+        // The records are in memory now. Anything that needs to ask about them
+        // — the Drive layer's "this browser is empty" offer — waits for this,
+        // because before it the store is legitimately empty and the answer
+        // would be a lie.
+        window.FSReady = true;
+        document.dispatchEvent(new Event('finsim:ready'));
     };
 
     if (typeof FSStore === 'undefined') { finsimStart(); return; }

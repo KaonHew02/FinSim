@@ -1283,6 +1283,52 @@ select {
 .drive-auto.is-on i,
 .drive-auto.is-on:hover i { color: #fff; }
 
+/* An offer, not a warning — so it wears the app's own colour. Nothing has gone
+   wrong; there is simply something to fetch. Full width, because a message
+   about recovering a lost book must not be scrollable past. */
+.drive-offer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--brand);
+    background: var(--brand-soft);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+}
+
+.drive-offer[hidden] { display: none; }
+.drive-offer i { flex: 0 0 auto; font-size: 15px; color: var(--brand); }
+.drive-offer span { flex: 1 1 auto; }
+
+.drive-offer button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    padding: 7px 13px;
+    border: 1px solid currentColor;
+    border-radius: 10px;
+    background: transparent;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 650;
+    color: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .16s ease;
+}
+
+.drive-offer button:hover { background: rgba(255, 255, 255, .55); }
+.drive-offer button.is-quiet { border-color: transparent; opacity: .75; }
+.drive-offer button.is-quiet:hover { opacity: 1; }
+
+@media (max-width: 720px) {
+    .drive-offer { flex-wrap: wrap; padding: 11px 16px; font-size: 12.5px; }
+    .drive-offer button { width: 100%; justify-content: center; }
+}
+
 .drive-stamp { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
 /* A week without a copy is worth noticing, and worth noticing quietly. */
 .drive-stamp.is-stale { color: var(--red); }

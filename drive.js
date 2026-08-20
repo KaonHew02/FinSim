@@ -388,6 +388,31 @@
         el.title = 'Last sent ' + then.toLocaleString();
     }
 
+    /* ------------------------------------------------------------------ *
+     * Coming back to an empty browser
+     * ------------------------------------------------------------------ *
+     * The moment a Drive copy actually earns its keep: this machine has
+     * nothing on its forms, and there may well be a set of scenarios sitting
+     * in the folder. Without this you would have to know to press "From
+     * Drive" — and someone whose browser has just been cleared is exactly the
+     * person who does not.
+     *
+     * It offers rather than does. A pull replaces what is here, and a silent
+     * one would be a network call and a sign-in nobody asked for — and a
+     * sign-in popup not started by a click gets blocked anyway.
+     *
+     * **It must not be asked before the records are loaded.** They come out of
+     * IndexedDB asynchronously, so for a moment after DOMContentLoaded the
+     * store is legitimately empty and this would announce that a full set of
+     * scenarios was missing.
+     */
+    function offerPull() {
+        const bar = $('driveOffer');
+        if (!bar) return;
+        if (!configured() || typeof finsimIsEmpty !== 'function' || !finsimIsEmpty()) return;
+        bar.hidden = false;
+    }
+
     /* ------------------------------------------------------------------ */
 
     function start() {
@@ -404,8 +429,31 @@
         // so the autosave needs to know nothing about any of this.
         window.FSDriveTouch = schedule;
 
+        const offer = $('driveOfferPull');
+        if (offer) {
+            offer.addEventListener('click', () => {
+                const bar = $('driveOffer');
+                if (bar) bar.hidden = true;
+                pull(offer);
+            });
+        }
+
+        const dismiss = $('driveOfferNo');
+        if (dismiss) {
+            dismiss.addEventListener('click', () => {
+                const bar = $('driveOffer');
+                if (bar) bar.hidden = true;
+            });
+        }
+
         paintAuto();
         showStamp();
+
+        // Only once app.js says the records are in memory. Either order is
+        // possible: on the localStorage fallback the app is ready before this
+        // runs, and on IndexedDB it is not.
+        if (window.FSReady) offerPull();
+        else document.addEventListener('finsim:ready', offerPull, { once: true });
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);

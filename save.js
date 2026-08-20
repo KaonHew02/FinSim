@@ -96,6 +96,20 @@ function storedJson(key, fallback) {
 }
 
 /**
+ * Has this browser got anything of the reader's in it?
+ *
+ * A form snapshot on its own is not enough — FinSim writes one within a moment
+ * of any first visit, defaults and all. So "empty" means no saved scenarios
+ * *and* a snapshot with nothing actually filled in. This is what tells the
+ * Drive layer whether to offer to bring a copy down.
+ */
+function finsimIsEmpty() {
+    const scenarios = storedJson(SCENARIOS_KEY, null);
+    if (scenarios && Array.isArray(scenarios.items) && scenarios.items.length) return false;
+    return countFilled(storedRaw(INPUTS_KEY)) === 0;
+}
+
+/**
  * ====================================================================
  * SNAPSHOTS — reading a calculator off the page, and writing it back
  * ====================================================================
@@ -534,6 +548,13 @@ function countFilled(raw) {
             return Object.entries(snap.f || {}).some(([id, value]) => {
                 const typed = String(value).trim();
                 if (!typed) return false;
+                // A date the app worked out for itself — the goal target, a
+                // year out from today — is not something anyone typed, and
+                // counting it made a browser that had never been used report a
+                // calculator in use. Under-counting a date somebody did change
+                // is the safer way to be wrong: it only ever means offering to
+                // restore from Drive when there was little to lose.
+                if (/^\d{4}-\d{2}-\d{2}$/.test(typed)) return false;
                 // A field the form knows about counts only if it starts blank;
                 // one it does not know about (a relief line) counts unless it is
                 // still sitting on the zero it was built with.

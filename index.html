@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- ?v= is bumped whenever the CSS or JS changes: GitHub Pages sends a long
          cache life, and a phone will otherwise keep the old file for days. -->
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -193,6 +193,16 @@
                 </div>
             </div>
         </header>
+
+        <!-- Shown once, on a browser holding nothing, when Drive is set up.
+             The cleared-browser recovery path: the person who most needs
+             "From Drive" is the one least likely to know it exists. -->
+        <div class="drive-offer" id="driveOffer" hidden>
+            <i class="bi bi-cloud-arrow-down-fill"></i>
+            <span>There is nothing on the forms in this browser. If you have a copy in your Google Drive folder, bring it down &mdash; it will tell you what is in both before replacing anything.</span>
+            <button type="button" id="driveOfferPull"><i class="bi bi-cloud-arrow-down"></i> Check Drive</button>
+            <button type="button" class="is-quiet" id="driveOfferNo">Not now</button>
+        </div>
 
         <!-- ===================== PCB MODULE ===================== -->
         <section id="pcb-module" class="module is-active">
@@ -3333,15 +3343,15 @@
     </div>
 </div>
 
-<script src="store.js?v=6"></script>
-<script src="app.js?v=6"></script>
-<script src="save.js?v=6"></script>
+<script src="store.js?v=8"></script>
+<script src="app.js?v=8"></script>
+<script src="save.js?v=8"></script>
 
 <!-- Google's sign-in library, and the two files that use it. Everything above
      works without them: if this script is blocked, the Drive buttons say so
      and Export/Import carry on. -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="drive-config.js?v=6"></script>
-<script src="drive.js?v=6"></script>
+<script src="drive-config.js?v=8"></script>
+<script src="drive.js?v=8"></script>
 </body>
 </html>

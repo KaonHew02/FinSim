@@ -39,6 +39,25 @@ reasonable, which is why it is a switch.
 
 ---
 
+## Coming back to an empty browser
+
+Open FinSim on a machine with nothing on its forms — a new laptop, or one whose
+browsing data was cleared — and a strip appears above the calculators:
+
+> There is nothing on the forms in this browser. If you have a copy in your
+> Google Drive folder, bring it down.
+
+Pressing **Check Drive** is the same as pressing **From Drive**: it reads the
+folder, tells you what is in both copies and their dates, and waits for you to
+agree before replacing anything.
+
+It offers rather than does. A pull replaces what is here, and doing that on its
+own — before you have even looked at the screen — is not a decision the app
+gets to make for you. It never appears on a browser that already has figures or
+saved scenarios in it, so it is not something you will see twice.
+
+---
+
 ## Before you start: check who can see that folder
 
 Open [your FinSim folder](https://drive.google.com/drive/folders/19TPVA4qq6bnwN9kQh_p4UOycB0wSfYGm)
