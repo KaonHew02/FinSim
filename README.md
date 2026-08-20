@@ -5,16 +5,20 @@ page — payslip to retirement, all built on KWSP, LHDN and PERKESO rules rather
 than generic overseas formulas.
 
 No install, no sign-up, no data leaves your machine. Open `index.html` in a
-browser and it runs.
+browser and it runs. Live at <https://kaonhew02.github.io/FinSim/>.
 
 ```
 FinSim/
-├── index.html      the page — sidebar + one section per calculator
-├── app.js          all the maths, then the render code
-├── style.css       design tokens, components, responsive rules
-├── FinSimLogo.svg  the logo — mark + wordmark (FinSimMark.svg is the mark alone)
-├── MODULES.md      the deep version of this document
-└── README.md       you are here
+├── index.html        the page — sidebar + one section per calculator
+├── app.js            all the maths, then the render code
+├── save.js           autosave, saved scenarios, export/import
+├── drive.js          the optional copy in your own Google Drive
+├── drive-config.js   your Google client ID and folder — safe to publish
+├── style.css         design tokens, components, responsive rules
+├── FinSimLogo.svg    the logo — mark + wordmark (FinSimMark.svg is the mark alone)
+├── docs/DRIVE.md     setting the Drive copy up, once
+├── MODULES.md        the deep version of this document
+└── README.md         you are here
 ```
 
 ---
@@ -92,7 +96,34 @@ the sen.
 5. **Reset** at the top of each panel restores that calculator's defaults and
    leaves the others alone.
 
-Nothing is saved anywhere. Reloading the page starts clean.
+---
+
+## Your figures are kept
+
+**Everything you type is saved in this browser as you type it.** Close the tab,
+come back next week, and every calculator is as you left it — including which
+one you were on. There is nothing to press.
+
+**Scenarios** are named copies of one calculator. Fill in the home loan, press
+**Save**, call it *35 years at 4%*; change the term and rate, save that as *30
+years at 4.2%*. Both sit as chips under the panel head, one tap apart. A chip
+lights up while the form matches it exactly, so the moment you change a figure
+you can see you are looking at something new. Chips belong to their own
+calculator — saving from the home loan panel files the home loan, nothing else.
+
+**That is one browser, though.** Clearing your browsing data takes the lot, and
+your phone knows nothing about your laptop. Two copies answer that, both in the
+topbar:
+
+| | |
+|---|---|
+| **Export** / **Import** | One `finsim-YYYY-MM-DD.json` file, downloaded and read back. Needs nothing set up. |
+| **To Drive** / **From Drive** | The same file, kept in a folder in your own Google Drive. Needs a one-time setup — **[docs/DRIVE.md](docs/DRIVE.md)**. |
+
+Import and **From Drive** both **replace** what is in this browser rather than
+merging it, and both say what is in each copy and wait for you to agree first.
+Merging would mean guessing which saved scenario is which, and a wrong guess
+leaves you with two *Plan A*s that disagree.
 
 ---
 
@@ -136,7 +167,11 @@ Plain HTML, CSS and JavaScript. No framework, no build step, no dependencies.
 - A single `renderAll()` recalculates every module on every keystroke, so no
   state can go stale.
 - A module is four things: a nav button, a `<section class="module">`, a
-  `renderX()`, and entries in `MODULES` and `FORM_DEFAULTS`.
+  `renderX()`, and entries in `MODULES` and `FORM_DEFAULTS`. It needs nothing
+  added to `save.js` — snapshots are taken by walking the section's own fields,
+  so a new calculator is saved, backed up and scenario-able the day it lands.
+  The exception is state kept *outside* the inputs (a "which box leads" flag,
+  the EPF per-year rates): that goes in `captureExtras` / `applyExtras`.
 
 **[MODULES.md](MODULES.md)** documents every calculator's inputs, formulas and
 assumptions, the shared helper library, the conventions the whole app follows,

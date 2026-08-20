@@ -3399,6 +3399,11 @@ function renderAll() {
     renderNetWorth();
     renderFund();
     renderRentBuy();
+
+    // Every interaction that changes a figure ends here, so this is the one
+    // place worth hanging the autosave on. save.js debounces it; if that file
+    // is not loaded, nothing here notices.
+    if (typeof saveSoon === 'function') saveSoon();
 }
 
 /**
@@ -3436,6 +3441,9 @@ function switchModule(moduleId) {
         set('page-title', meta.title);
         set('page-sub', meta.sub);
     }
+
+    // Which calculator you were on is part of where you left off.
+    if (typeof saveSoon === 'function') saveSoon();
 }
 
 const FORM_DEFAULTS = {
@@ -3512,7 +3520,7 @@ const FORM_DEFAULTS = {
     },
 };
 
-function resetForm(which) {
+function resetForm(which, render = true) {
     Object.entries(FORM_DEFAULTS[which] || {}).forEach(([id, value]) => {
         const el = $(id);
         if (!el) return;
@@ -3548,7 +3556,9 @@ function resetForm(which) {
         epfBuiltRows = -1;
     }
 
-    renderAll();
+    // Loading a saved scenario resets the form first and paints once at the
+    // end — a repaint in between would be a flash of empty answers.
+    if (render) renderAll();
 }
 
 function setReliefDetail(row, open) {
@@ -3758,6 +3768,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-reset]').forEach((btn) => {
         btn.addEventListener('click', () => resetForm(btn.dataset.reset));
     });
+
+    // Last, and after the run-time fields exist: put back whatever was on the
+    // forms when this browser was last here, and draw the scenario chips.
+    if (typeof finsimRestore === 'function') finsimRestore();
 
     renderAll();
 });

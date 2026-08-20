@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- ?v= is bumped whenever the CSS or JS changes: GitHub Pages sends a long
          cache life, and a phone will otherwise keep the old file for days. -->
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -160,8 +160,34 @@
         </div>
 
         <header class="topbar">
-            <h1 id="page-title">PCB Calculator</h1>
-            <p id="page-sub">Type your salary &mdash; deductions and take-home pay update as you go.</p>
+            <div class="topbar-text">
+                <h1 id="page-title">PCB Calculator</h1>
+                <p id="page-sub">Type your salary &mdash; deductions and take-home pay update as you go.</p>
+            </div>
+
+            <!-- Your figures are saved in this browser as you type. These four
+                 buttons are about the *second* copy: a file you keep, and a file
+                 in your own Google Drive. Nothing leaves the browser unpressed. -->
+            <div class="topbar-tools">
+                <span class="drive-stamp" id="driveStamp"></span>
+                <div class="tool-group">
+                    <button type="button" class="tool-btn" id="drivePush" title="Send this browser's figures to your Google Drive folder">
+                        <i class="bi bi-cloud-arrow-up"></i><span>To Drive</span>
+                    </button>
+                    <button type="button" class="tool-btn" id="drivePull" title="Replace what is here with the copy in Google Drive">
+                        <i class="bi bi-cloud-arrow-down"></i><span>From Drive</span>
+                    </button>
+                </div>
+                <div class="tool-group">
+                    <button type="button" class="tool-btn" id="backupExport" title="Download everything as one JSON file">
+                        <i class="bi bi-download"></i><span>Export</span>
+                    </button>
+                    <button type="button" class="tool-btn" id="backupImport" title="Read a FinSim backup file back in">
+                        <i class="bi bi-upload"></i><span>Import</span>
+                    </button>
+                    <input type="file" id="backupFile" accept="application/json,.json" hidden>
+                </div>
+            </div>
         </header>
 
         <!-- ===================== PCB MODULE ===================== -->
@@ -3286,6 +3312,31 @@
     </main>
 </div>
 
-<script src="app.js?v=3"></script>
+<!-- One dialog, borrowed by every question the app asks: name this scenario,
+     delete that one, replace everything with a file. `confirm()` would do the
+     job and would look like 1998 in the middle of this page. -->
+<div class="dlg-scrim" id="dlg" hidden>
+    <div class="dlg card" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+        <h3 id="dlgTitle"></h3>
+        <p id="dlgBody"></p>
+        <div class="dlg-field" id="dlgField" hidden>
+            <input type="text" id="dlgInput" maxlength="40" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="dlg-actions">
+            <button type="button" class="ghost-btn" id="dlgCancel">Cancel</button>
+            <button type="button" class="dlg-ok" id="dlgOk">OK</button>
+        </div>
+    </div>
+</div>
+
+<script src="app.js?v=4"></script>
+<script src="save.js?v=4"></script>
+
+<!-- Google's sign-in library, and the two files that use it. Everything above
+     works without them: if this script is blocked, the Drive buttons say so
+     and Export/Import carry on. -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="drive-config.js?v=4"></script>
+<script src="drive.js?v=4"></script>
 </body>
 </html>

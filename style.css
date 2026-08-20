@@ -226,7 +226,18 @@ body {
     padding: 40px 40px 56px;
 }
 
-.topbar { margin-bottom: 26px; }
+.topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px 20px;
+    flex-wrap: wrap;
+    margin-bottom: 26px;
+}
+
+/* The heading gives way first: it can wrap onto two lines, where the tools
+   would have to drop onto a row of their own. */
+.topbar-text { flex: 1 1 340px; min-width: 0; }
 
 .topbar h1 {
     margin: 0;
@@ -1212,4 +1223,225 @@ select {
     .nw-row { grid-template-columns: minmax(0, 1fr) 118px; gap: 6px 12px; }
     .nw-share { display: none; }
 
+}
+
+
+/* ==========================================================================
+   Saving — the topbar tools, the scenario chips, and the one dialog
+   --------------------------------------------------------------------------
+   Everything here is about a *copy*. The figures themselves are written to
+   this browser as they are typed, with nothing to press; these controls are
+   for the file you keep and the folder in your Drive. Which is why they sit
+   at the top of the page and not in the middle of a form.
+   ========================================================================== */
+.topbar-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 3px;
+}
+
+/* Buttons that belong together are drawn as one control with hairlines
+   between them — four separate pills across the top would read as four
+   unrelated things to press. */
+.tool-group {
+    display: inline-flex;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 11px;
+    border: 0;
+    border-left: 1px solid var(--line-2);
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s ease, color .15s ease;
+}
+
+.tool-group .tool-btn:first-child { border-left: 0; }
+.tool-btn i { font-size: 14px; color: var(--ink-3); transition: color .15s ease; }
+.tool-btn:hover { background: var(--brand-soft); color: var(--brand); }
+.tool-btn:hover i { color: var(--brand); }
+
+.drive-stamp { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+/* A week without a copy is worth noticing, and worth noticing quietly. */
+.drive-stamp.is-stale { color: var(--red); }
+
+/* --------------------------------------------------------------------------
+   Scenario chips — built by save.js under every panel head
+   -------------------------------------------------------------------------- */
+.scen-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: -4px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line-2);
+}
+
+.scen-chips {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-bottom: 2px;
+}
+
+.scen-empty { font-size: 11.5px; line-height: 1.45; color: var(--ink-3); }
+.scen-empty b { font-weight: 600; color: var(--ink-2); }
+
+.scen-chip {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    max-width: 168px;
+    border: 1px solid var(--line-2);
+    border-radius: 999px;
+    background: var(--paper);
+    transition: all .15s ease;
+}
+
+.scen-chip button {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-2);
+    cursor: pointer;
+}
+
+.scen-load {
+    padding: 5px 4px 5px 11px;
+    max-width: 132px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scen-del { padding: 5px 9px 5px 3px; color: var(--ink-3); line-height: 1; }
+.scen-del:hover { color: var(--red); }
+.scen-chip:hover { border-color: #d9dde6; }
+
+/* Lit while the form matches it exactly. That is the whole "unsaved changes"
+   indicator: change one figure and the light goes out. */
+.scen-chip.is-on {
+    background: var(--brand-soft);
+    border-color: rgba(0, 75, 175, .22);
+}
+.scen-chip.is-on .scen-load { color: var(--brand); }
+
+.scen-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: none;
+    padding: 6px 11px;
+    border: 1px solid rgba(0, 75, 175, .22);
+    border-radius: 8px;
+    background: var(--brand-soft);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--brand);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .15s ease;
+}
+
+.scen-add:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+/* --------------------------------------------------------------------------
+   The dialog
+   -------------------------------------------------------------------------- */
+.dlg-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(20, 25, 42, .42);
+}
+
+.dlg-scrim[hidden] { display: none; }
+
+.dlg {
+    width: 100%;
+    max-width: 430px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dlg h3 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.dlg p  { margin: 0; font-size: 13px; line-height: 1.55; color: var(--ink-2); }
+.dlg p[hidden] { display: none; }
+
+.dlg-field[hidden] { display: none; }
+
+.dlg-field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.dlg-field input:focus { outline: 2px solid var(--brand-soft); border-color: var(--brand); }
+
+.dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 2px; }
+
+.dlg-ok {
+    padding: 8px 14px;
+    border: 1px solid var(--brand);
+    border-radius: 8px;
+    background: var(--brand);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: all .15s ease;
+}
+
+.dlg-ok:hover { background: var(--brand-2); border-color: var(--brand-2); }
+.dlg-ok[hidden] { display: none; }
+
+/* Replacing everything, or deleting a scenario, is the one place a button
+   should look like what it does. */
+.dlg-ok.is-danger { background: var(--red); border-color: var(--red); }
+.dlg-ok.is-danger:hover { background: #b32b25; border-color: #b32b25; }
+
+@media (max-width: 900px) {
+    /* The tools go under the heading rather than beside it, and the labels go
+       with them — four icons in a row is what fits, and each keeps its title. */
+    .topbar { flex-direction: column; align-items: stretch; gap: 12px; }
+    .topbar-tools { padding-top: 0; }
+    .tool-group { flex: 1; }
+    .tool-btn { flex: 1; justify-content: center; padding: 8px 6px; }
+    .tool-btn span { display: none; }
+    .tool-btn i { font-size: 16px; }
+    .drive-stamp { order: 3; width: 100%; }
 }
