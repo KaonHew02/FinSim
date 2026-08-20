@@ -1333,6 +1333,14 @@ select {
 /* A week without a copy is worth noticing, and worth noticing quietly. */
 .drive-stamp.is-stale { color: var(--red); }
 
+/* Working: a tick, no words. Nothing to read, nothing to interpret,
+   and the date is a hover away. */
+.drive-stamp[data-state="ok"] { color: var(--brand); }
+.drive-stamp[data-state="ok"] i { font-size: 15px; }
+
+/* Nothing set up and nothing to warn about: say nothing at all. */
+.drive-stamp[data-state="none"] { display: none; }
+
 /* --------------------------------------------------------------------------
    Scenario chips — built by save.js under every panel head
    -------------------------------------------------------------------------- */
