@@ -1338,6 +1338,10 @@ select {
 .drive-stamp[data-state="ok"] { color: var(--brand); }
 .drive-stamp[data-state="ok"] i { font-size: 15px; }
 
+/* Not backed up. A crossed cloud, right beside the button that fixes
+   it — no sentence to decode, and the reason is in the tooltip. */
+.drive-stamp[data-state="warn"] i { font-size: 15px; }
+
 /* Nothing set up and nothing to warn about: say nothing at all. */
 .drive-stamp[data-state="none"] { display: none; }
 

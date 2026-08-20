@@ -29,8 +29,8 @@ last time you remembered to press a button. Two rules keep it out of the way:
   and one that is not blocked is worse.
 - **It cannot make the first push itself.** Signing in to Google has to be
   something you asked for, so on a browser that has never pushed, Auto stands
-  down every time. The stamp says **"Press To Drive to start Auto"** in red when
-  that is what is happening — press it once and Auto takes over.
+  down every time. A crossed-out cloud appears beside the button when that is what is
+  happening — press it once and Auto takes over.
 - **After that it renews itself.** A Google token lasts about an hour, so Auto
   quietly asks for a fresh one when it needs to. That works for as long as the
   permission you granted is still in place. If Google ever wants you to sign in
