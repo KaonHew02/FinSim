@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- ?v= is bumped whenever the CSS or JS changes: GitHub Pages sends a long
          cache life, and a phone will otherwise keep the old file for days. -->
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -171,6 +171,10 @@
             <div class="topbar-tools">
                 <span class="drive-stamp" id="driveStamp"></span>
                 <div class="tool-group">
+                    <button type="button" class="tool-btn drive-auto" id="driveAuto" aria-pressed="false"
+                            title="Off &mdash; nothing goes to Drive unless you press &quot;To Drive&quot;.">
+                        <i class="bi bi-arrow-repeat"></i><span>Auto</span>
+                    </button>
                     <button type="button" class="tool-btn" id="drivePush" title="Send this browser's figures to your Google Drive folder">
                         <i class="bi bi-cloud-arrow-up"></i><span>To Drive</span>
                     </button>
@@ -3329,15 +3333,15 @@
     </div>
 </div>
 
-<script src="store.js?v=5"></script>
-<script src="app.js?v=5"></script>
-<script src="save.js?v=5"></script>
+<script src="store.js?v=6"></script>
+<script src="app.js?v=6"></script>
+<script src="save.js?v=6"></script>
 
 <!-- Google's sign-in library, and the two files that use it. Everything above
      works without them: if this script is blocked, the Drive buttons say so
      and Export/Import carry on. -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="drive-config.js?v=5"></script>
-<script src="drive.js?v=5"></script>
+<script src="drive-config.js?v=6"></script>
+<script src="drive.js?v=6"></script>
 </body>
 </html>

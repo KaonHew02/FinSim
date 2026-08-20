@@ -56,11 +56,20 @@ function storedRaw(key) {
 }
 
 function storeRaw(key, value) {
+    let ok = true;
     if (!haveStore()) {
-        try { localStorage.setItem(key, value); return true; } catch (err) { return false; }
+        try { localStorage.setItem(key, value); } catch (err) { ok = false; }
+    } else {
+        FSStore.set(key, value);
+        ok = !storeBroken;
     }
-    FSStore.set(key, value);
-    return !storeBroken;
+
+    // Tell the Drive layer a figure moved. It does nothing unless the switch is
+    // on, and it is absent entirely when drive.js did not load — so this stays
+    // a one-way nudge. A write that did not land must not trigger one, or Drive
+    // would be sent a copy that is already stale.
+    if (ok && typeof window.FSDriveTouch === 'function') window.FSDriveTouch();
+    return ok;
 }
 
 /**

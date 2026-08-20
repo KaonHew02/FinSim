@@ -1275,6 +1275,14 @@ select {
 .tool-btn:hover { background: var(--brand-soft); color: var(--brand); }
 .tool-btn:hover i { color: var(--brand); }
 
+/* The auto-push switch. Off is the resting state and looks like every other
+   button; on, it is filled — this is a thing you turn on deliberately, not
+   one you press by accident. */
+.drive-auto.is-on,
+.drive-auto.is-on:hover { background: var(--brand); color: #fff; }
+.drive-auto.is-on i,
+.drive-auto.is-on:hover i { color: #fff; }
+
 .drive-stamp { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
 /* A week without a copy is worth noticing, and worth noticing quietly. */
 .drive-stamp.is-stale { color: var(--red); }

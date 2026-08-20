@@ -289,6 +289,72 @@
     }
 
     /* ------------------------------------------------------------------ *
+     * Sending it up on its own
+     * ------------------------------------------------------------------ *
+     * Off by default, and it has to be: this file's whole promise is that
+     * nothing leaves the browser unless someone presses a button. A switch
+     * makes that a choice rather than a change made on everyone's behalf.
+     *
+     * Two rules keep it from being obnoxious once it is on:
+     *
+     *   It never opens a sign-in window. A popup nobody asked for gets
+     *   blocked, and a popup that is not blocked is worse. If the token has
+     *   lapsed the automatic push simply stands down and the stamp goes stale,
+     *   which is exactly the signal that says "press the button".
+     *
+     *   It waits for the typing to stop. A push per keystroke would be a
+     *   hundred writes to Drive for one evening at a calculator.
+     */
+    const AUTO_KEY  = 'finsim.drive.auto';
+    const AUTO_WAIT = 60000;
+
+    let autoTimer = null;
+
+    const autoOn = () => {
+        try { return localStorage.getItem(AUTO_KEY) === 'on'; } catch (err) { return false; }
+    };
+
+    function setAuto(on) {
+        try { localStorage.setItem(AUTO_KEY, on ? 'on' : 'off'); } catch (err) { /* not vital */ }
+        paintAuto();
+        if (on) schedule(); else clearTimeout(autoTimer);
+    }
+
+    function paintAuto() {
+        const btn = $('driveAuto');
+        if (!btn) return;
+        const on = autoOn();
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-pressed', String(on));
+        btn.title = on
+            ? 'Sending a copy to Drive about a minute after you stop typing. Click to stop.'
+            : 'Off — nothing goes to Drive unless you press "To Drive". Click to send it automatically.';
+    }
+
+    /** Called by save.js whenever a figure changes. */
+    function schedule() {
+        if (!autoOn() || !configured()) return;
+        clearTimeout(autoTimer);
+        autoTimer = setTimeout(run, AUTO_WAIT);
+    }
+
+    async function run() {
+        if (!autoOn() || !configured()) return;
+        // Silent or not at all — see above.
+        if (!valid()) { showStamp(); return; }
+
+        try {
+            await writeFile(backupEnvelope());
+            remember();
+        } catch (err) {
+            // A failed automatic push is not worth a dialog in front of
+            // someone who did not ask for one. The stamp going stale is the
+            // honest signal, and pressing the button gives the real error.
+            showStamp();
+        }
+    }
+
+    /* ------------------------------------------------------------------ *
      * "Last saved" — the only status worth showing
      * ------------------------------------------------------------------ */
 
@@ -331,6 +397,14 @@
         const down = $('drivePull');
         if (down) down.addEventListener('click', () => pull(down));
 
+        const auto = $('driveAuto');
+        if (auto) auto.addEventListener('click', () => setAuto(!autoOn()));
+
+        // The only way in from save.js. It is a no-op when the switch is off,
+        // so the autosave needs to know nothing about any of this.
+        window.FSDriveTouch = schedule;
+
+        paintAuto();
         showStamp();
     }
 

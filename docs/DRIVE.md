@@ -4,14 +4,38 @@ FinSim saves what you type into the browser you typed it in. That is instant,
 it needs no account, and it works with the network off. What it cannot survive
 is clearing your browsing data, a reinstalled browser, or a second computer.
 
-So there are two copies beyond this browser, both of them things you press for:
+So there are two copies beyond this browser:
 
 - **Export / Import** — one JSON file you download and keep. Needs nothing set
-  up, works today, works offline.
+  up, works today, works offline. Use this for a copy that is *never*
+  overwritten — a keepsake at the end of a year, say.
 - **To Drive / From Drive** — the same file, kept in a folder in your own
   Google Drive. This is what needs the twenty minutes below, once.
 
-Nothing syncs on its own. Nothing leaves the browser unless you press a button.
+**With Auto off, nothing leaves the browser unless you press a button.** That
+is the default, and it is the state the app ships in.
+
+---
+
+## Auto
+
+The **Auto** switch sits beside *To Drive*. Turned on, FinSim sends a copy about
+**a minute after you stop typing**, so the Drive copy stops being as old as the
+last time you remembered to press a button. Two rules keep it out of the way:
+
+- **It never opens a sign-in window.** If your Google session has lapsed, the
+  automatic push quietly stands down and the stamp goes stale — which is the
+  signal to press **To Drive** yourself. A popup nobody asked for gets blocked,
+  and one that is not blocked is worse.
+- **It waits for the typing to stop.** An evening at a calculator is one
+  upload, not a hundred.
+
+A failed automatic push does not put a dialog in front of you either. The stamp
+going stale says it, and pressing the button gives you the real error.
+
+Turn it on if you would rather not think about backups. Leave it off if you
+would rather the app never spoke to the network on its own — both are
+reasonable, which is why it is a switch.
 
 ---
 
