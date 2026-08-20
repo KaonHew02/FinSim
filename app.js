@@ -3771,7 +3771,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Last, and after the run-time fields exist: put back whatever was on the
     // forms when this browser was last here, and draw the scenario chips.
-    if (typeof finsimRestore === 'function') finsimRestore();
+    //
+    // The records come out of IndexedDB, which is asynchronous — so this waits
+    // for them. Where there is no database to wait for (a browser without it,
+    // and the test harness) the store hydrates in this same tick and nothing
+    // about the start-up changes. See store.js.
+    const finsimStart = () => {
+        if (typeof finsimRestore === 'function') finsimRestore();
+        renderAll();
 
-    renderAll();
+        // Ask the browser not to throw the records away when the disk gets
+        // tight, and only once there is something worth keeping — Firefox
+        // turns this into a permission prompt.
+        if (typeof FSStore === 'undefined') return;
+
+        // What the browser is actually offering, rather than the five-megabyte
+        // guess the store starts with.
+        if (FSStore.measure) FSStore.measure();
+
+        // And ask it not to throw the records away when the disk gets tight,
+        // once there is something worth keeping — Firefox turns this into a
+        // permission prompt, and a prompt about an empty form is a prompt
+        // about nothing.
+        if (FSStore.persist && storedRaw('finsim.inputs.v1')) FSStore.persist();
+    };
+
+    if (typeof FSStore === 'undefined') { finsimStart(); return; }
+    if (FSStore.initSync(storeReport)) finsimStart();
+    else FSStore.init(storeReport).then(finsimStart);
 });

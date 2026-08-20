@@ -35,13 +35,49 @@ const INPUTS_KEY    = 'finsim.inputs.v1';
 const SCENARIOS_KEY = 'finsim.scenarios.v1';
 const BACKUP_STORES = [INPUTS_KEY, SCENARIOS_KEY];
 
-/** Private mode, `file://` and a full disk can all throw. None of them is worth losing a keystroke over. */
+/**
+ * Records live in IndexedDB, mirrored in memory so these two stay synchronous
+ * — see store.js. localStorage caps an origin at about 5 MB and no setting
+ * raises it, and because FinSim and MoneyFlow are published under the same
+ * `github.io` account they were sharing that one bucket between them.
+ *
+ * Private mode, `file://` and a full disk can all still throw; none of them is
+ * worth losing a keystroke over, so the failure is reported rather than raised.
+ */
+const haveStore = () => typeof FSStore !== 'undefined';
+
 function storedRaw(key) {
-    try { return localStorage.getItem(key); } catch (err) { return null; }
+    // If store.js did not load at all, this file still has to work — it is the
+    // only thing standing between a keystroke and the floor.
+    if (!haveStore()) {
+        try { return localStorage.getItem(key); } catch (err) { return null; }
+    }
+    return FSStore.get(key);
 }
 
 function storeRaw(key, value) {
-    try { localStorage.setItem(key, value); return true; } catch (err) { return false; }
+    if (!haveStore()) {
+        try { localStorage.setItem(key, value); return true; } catch (err) { return false; }
+    }
+    FSStore.set(key, value);
+    return !storeBroken;
+}
+
+/**
+ * The one place a write's fate is noticed. `null` means the last one landed,
+ * which is how the warning gets to clear itself rather than sitting there
+ * forever after a single hiccup.
+ */
+let storeBroken = false;
+
+function storeReport(err) {
+    if (!err) { storeBroken = false; return; }
+    if (storeBroken) return;                       // said once is enough
+    storeBroken = true;
+    backupSay('This browser is refusing to save',
+        'Whatever you change from here will not survive a reload. That is usually a private '
+        + 'window, or a disk with nothing left on it. Export a copy to a file before you close '
+        + 'the tab — everything on screen is still here until then.');
 }
 
 function storedJson(key, fallback) {
@@ -510,13 +546,17 @@ function backupApply(envelope) {
 
     BACKUP_STORES.forEach((key) => {
         if (stores[key] === undefined) {
-            try { localStorage.removeItem(key); } catch (err) { /* nothing to remove */ }
+            if (haveStore()) FSStore.remove(key);
+            else { try { localStorage.removeItem(key); } catch (err) { /* nothing to remove */ } }
         } else {
             storeRaw(key, stores[key]);
         }
     });
 
-    location.reload();
+    // On IndexedDB the writes are still in flight; reloading before they land
+    // would show a half-restored book.
+    if (haveStore()) FSStore.flush().then(() => location.reload());
+    else location.reload();
 }
 
 function exportBackup(btn) {
