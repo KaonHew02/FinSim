@@ -1216,6 +1216,10 @@ select {
     }
 
     .relief-label { grid-column: 1 / -1; }
+
+    /* 17px of text is a mouse target, not a thumb one. The padding is the
+       whole change — it buys tap height without moving anything. */
+    .relief-more { margin-top: 2px; padding: 8px 2px; }
     .relief-entry { justify-content: flex-start; }
     .relief-counted { align-self: center; }
 
@@ -1504,9 +1508,22 @@ select {
     /* The tools go under the heading rather than beside it, and the labels go
        with them — four icons in a row is what fits, and each keeps its title. */
     .topbar { flex-direction: column; align-items: stretch; gap: 12px; }
+
+    /* The 340px on .topbar-text is a flex-*basis*. Sideways it reads as a
+       width; the moment the topbar turns into a column it reads as a HEIGHT,
+       and the heading grows a 340px hole under itself. Height comes from the
+       words here. */
+    .topbar-text { flex: 0 0 auto; }
+
     .topbar-tools { padding-top: 0; }
-    .tool-group { flex: 1; }
-    .tool-btn { flex: 1; justify-content: center; padding: 8px 6px; }
+
+    /* Share the row by how many buttons a group holds, not half each — a
+       3-button group and a 2-button group splitting 50/50 draws five icons
+       at two different widths. */
+    .tool-group { flex: 1 1 0; }
+    .topbar-tools .tool-group:first-of-type { flex-grow: 3; }
+    .topbar-tools .tool-group:last-of-type  { flex-grow: 2; }
+    .tool-btn { flex: 1; justify-content: center; padding: 10px 6px; }
     .tool-btn span { display: none; }
     .tool-btn i { font-size: 16px; }
     .drive-stamp { order: 3; width: 100%; }
