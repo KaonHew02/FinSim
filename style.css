@@ -897,10 +897,57 @@ select {
    ========================================================================== */
 /* The date sits beside a compact months box, so it has to match that box rather
    than the full-size fields above it. */
-.pct-pair input[type="date"] {
-    padding: 8px 11px;
+/* --------------------------------------------------------------------------
+   The dd-mm-yyyy box
+
+   A text box with a calendar button parked inside its right edge. The native
+   date input behind that button is the picker and nothing else — it is never
+   read, so it is never seen.
+   -------------------------------------------------------------------------- */
+.date-input { position: relative; }
+
+.date-input input[type="text"] {
+    padding: 8px 36px 8px 11px;
     font-size: 13.5px;
     font-variant-numeric: tabular-nums;
+    letter-spacing: .01em;
+}
+
+.date-pick {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    font-size: 14px;
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: all .15s ease;
+}
+
+.date-pick:hover { background: var(--brand-soft); color: var(--brand); }
+
+/* Present for the picker it opens, and for nothing else. `display: none`
+   would take the picker with it — Chrome refuses `showPicker()` on a box it
+   cannot lay out — so it is a one-pixel box pinned under the button instead. */
+.date-native {
+    position: absolute;
+    right: 16px;
+    bottom: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* What the balance earned on its own, told apart from what was paid in. */
@@ -1504,6 +1551,69 @@ select {
 .dlg-ok.is-danger { background: var(--red); border-color: var(--red); }
 .dlg-ok.is-danger:hover { background: #b32b25; border-color: #b32b25; }
 
+/* ==========================================================================
+   The Saved stamp, and the panel behind it
+   ========================================================================== */
+
+/* Quiet on purpose. It is not a control, it is a receipt — the moment it
+   looks like a button it starts asking to be pressed, and there is nothing
+   here that has to be. It says nothing at all until something has saved. */
+.save-stamp {
+    padding: 4px 6px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    font: inherit;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    cursor: pointer;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    transition: all .15s ease;
+}
+
+.save-stamp:hover { background: var(--brand-soft); color: var(--brand); }
+.save-stamp:empty { display: none; }
+
+/* Taller than the one-question dialog it shares a shell with, so it scrolls
+   inside itself rather than off the top of a short window. */
+.dlg.is-wide { max-width: 520px; max-height: calc(100vh - 48px); overflow-y: auto; }
+
+.data-block { padding: 14px 0 0; border-top: 1px solid var(--line-2); }
+.data-block:first-of-type { border-top: 0; padding-top: 0; }
+
+.data-block h4 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 9px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    color: var(--ink);
+}
+
+.data-block h4 > i { font-size: 14px; color: var(--brand); }
+.data-block p { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--ink-2); }
+.data-sub { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.data-note { margin-top: 10px; font-size: 11.5px; line-height: 1.5; color: var(--ink-3); }
+.data-note em { font-style: normal; font-weight: 700; color: var(--ink-2); }
+
+/* Against the ceiling, never against itself — the question this bar answers
+   is how much room is left, and a bar that rescales to whatever is stored
+   can never answer it. */
+.data-meter {
+    height: 8px;
+    margin: 10px 0 7px;
+    border-radius: 999px;
+    background: var(--line-2);
+    overflow: hidden;
+}
+
+.data-meter > span { display: block; height: 100%; border-radius: 999px; background: var(--sos); }
+.data-meter > span.is-warn { background: var(--amber); }
+.data-meter > span.is-over { background: var(--red); }
+
 @media (max-width: 900px) {
     /* The tools go under the heading rather than beside it, and the labels go
        with them — four icons in a row is what fits, and each keeps its title. */
@@ -1527,4 +1637,9 @@ select {
     .tool-btn span { display: none; }
     .tool-btn i { font-size: 16px; }
     .drive-stamp { order: 3; width: 100%; }
+
+    /* Its own line above the buttons rather than squeezed between them —
+       sharing a row with two button groups is what turns a five-character
+       receipt into a sixth control. */
+    .save-stamp { order: -1; width: 100%; padding-left: 0; text-align: left; }
 }

@@ -274,7 +274,11 @@
                     + 'press “To Drive” to write a fresh one.');
             }
 
-            const modified = (await fileModified(id) || '').slice(0, 10) || 'an unknown date';
+            // Drive answers in RFC 3339, which starts with a yyyy-mm-dd nobody
+            // here reads dates in. Turn it round; say so plainly if it is absent.
+            const raw = await fileModified(id);
+            const stamp = raw ? new Date(raw) : null;
+            const modified = (stamp && !isNaN(stamp)) ? dmyDate(stamp) : 'an unknown date';
 
             askConfirm(
                 'Replace what is here with the Drive copy?',
@@ -402,28 +406,42 @@
      */
     function showStamp() {
         const el = $('driveStamp');
-        if (!el) return;
+
+        // The toolbar has room for a glyph and a tooltip; the Data panel has
+        // room for the sentence. Same three states, said twice at two
+        // different lengths, so neither can drift from the other.
+        const line = $('driveWhen');
 
         let stamp = null;
         try { stamp = localStorage.getItem(STAMP_KEY); } catch (err) { stamp = null; }
 
-        const show = (state, html, title) => {
-            el.dataset.state = state;
-            el.innerHTML = html;
-            el.title = title;
-            el.classList.toggle('is-stale', state === 'warn');
+        const show = (state, html, title, words) => {
+            if (el) {
+                el.dataset.state = state;
+                el.innerHTML = html;
+                el.title = title;
+                el.classList.toggle('is-stale', state === 'warn');
+            }
+            if (line) line.textContent = words;
         };
+
+        if (!configured()) {
+            return show('none', '', '', 'Drive is not set up in this copy of FinSim — see docs/DRIVE.md.');
+        }
 
         if (!stamp) {
             // Auto cannot make the first push itself: Google only signs anyone
             // in when they ask it to. Say what to do, not what is true.
-            if (autoOn() && configured()) {
+            if (autoOn()) {
                 return show('warn', '<i class="bi bi-cloud-slash-fill"></i>',
                     'Auto is on, but Google will only sign you in when you ask it to — so the '
                     + 'very first copy has to be one you send. Press "To Drive" once; after that '
-                    + 'Auto keeps it up to date on its own.');
+                    + 'Auto keeps it up to date on its own.',
+                    'Auto is on, but the first copy has to be one you send. Press “To Drive” once; '
+                    + 'after that it keeps itself up to date.');
             }
-            return show('none', '', 'Nothing has been sent to Drive from this browser.');
+            return show('none', '', 'Nothing has been sent to Drive from this browser.',
+                'Nothing has been sent to Drive from this browser yet.');
         }
 
         const then = new Date(stamp);
@@ -433,13 +451,16 @@
         // A week without a copy is worth interrupting for; anything less is not.
         if (days >= 7) {
             return show('warn', '<i class="bi bi-cloud-slash-fill"></i>',
-                'The last copy went to Drive on ' + then.toLocaleString() + '. If Auto is on, '
+                'The last copy went to Drive on ' + dmyStamp(then) + '. If Auto is on, '
                 + 'Google has probably stopped signing you in without being asked — one press '
-                + 'fixes that.');
+                + 'fixes that.',
+                'The last copy went up ' + when + ', on ' + dmyStamp(then) + '. If Auto is on, '
+                + 'Google has probably stopped signing you in without being asked — one press fixes it.');
         }
 
         show('ok', '<i class="bi bi-cloud-check-fill"></i>',
-            'In Drive, ' + when + ' · ' + then.toLocaleString());
+            'In Drive, ' + when + ' · ' + dmyStamp(then),
+            'In Drive, ' + when + ' — ' + dmyStamp(then) + '.');
     }
 
     /* ------------------------------------------------------------------ *

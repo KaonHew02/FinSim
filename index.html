@@ -169,6 +169,13 @@
                  buttons are about the *second* copy: a file you keep, and a file
                  in your own Google Drive. Nothing leaves the browser unpressed. -->
             <div class="topbar-tools">
+                <!-- The figures save themselves as you type, and a person who
+                     never sees that happen has to take it on faith. Four
+                     characters are the whole reassurance; pressing them opens
+                     the panel that says where the figures actually are. -->
+                <button type="button" class="save-stamp" id="saveStamp"
+                        title="Where these figures live, and how much room is left"></button>
+
                 <span class="drive-stamp" id="driveStamp"></span>
                 <div class="tool-group">
                     <button type="button" class="tool-btn drive-auto" id="driveAuto" aria-pressed="false"
@@ -1542,7 +1549,25 @@
                                 <span class="prefix">mth</span>
                                 <input type="number" id="goalMonths" inputmode="numeric" min="1" max="600" step="1" value="18" aria-label="Months until the deadline">
                             </div>
-                            <input type="date" id="goalDate" aria-label="Date you want the money by">
+                            <!-- A native date box writes itself in the *browser's*
+                                 locale, which on a machine set to US English is
+                                 mm/dd/yyyy — the wrong way round for everyone this
+                                 page is for, and not something CSS or an attribute
+                                 can reach. So the box people read and type into is
+                                 a text box that speaks dd-mm-yyyy, and the calendar
+                                 is still one press away in the native input behind
+                                 the button. -->
+                            <div class="date-input">
+                                <input type="text" id="goalDate" inputmode="numeric" maxlength="10"
+                                       placeholder="dd-mm-yyyy" autocomplete="off" spellcheck="false"
+                                       aria-label="Date you want the money by, as dd-mm-yyyy">
+                                <button type="button" class="date-pick" id="goalDatePick"
+                                        aria-label="Pick the date from a calendar">
+                                    <i class="bi bi-calendar3"></i>
+                                </button>
+                                <input type="date" class="date-native"
+                                       tabindex="-1" aria-hidden="true">
+                            </div>
                         </div>
                         <p class="hint">Set the months or pick the date &mdash; the other one follows. Deposits are counted at the end of each month, so the last one lands on the deadline itself.</p>
                     </div>
@@ -3339,6 +3364,38 @@
         <div class="dlg-actions">
             <button type="button" class="ghost-btn" id="dlgCancel">Cancel</button>
             <button type="button" class="dlg-ok" id="dlgOk">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================
+     THE DATA PANEL
+
+     Everything about where the figures are and how they get out of here, in
+     one place. The top bar has four buttons about the *second* copy and
+     nothing at all about the first, which is the one everybody's numbers are
+     actually sitting in — this is that sentence, plus how much room is left
+     before the browser starts caring.
+     ====================================================================== -->
+<div class="dlg-scrim" id="dataBox" hidden>
+    <div class="dlg card is-wide" role="dialog" aria-modal="true" aria-labelledby="dataTitle">
+        <h3 id="dataTitle">Your data</h3>
+
+        <section class="data-block">
+            <h4><i class="bi bi-hdd"></i>Where it lives</h4>
+            <p id="dataWhere">&mdash;</p>
+            <div class="data-meter"><span id="dataMeterFill"></span></div>
+            <p class="data-sub" id="dataUsed">&mdash;</p>
+        </section>
+
+        <section class="data-block">
+            <h4><i class="bi bi-google"></i>The second copy</h4>
+            <p class="data-sub" id="driveWhen">&mdash;</p>
+            <p class="data-note">Drive holds a <em>copy</em>, and so does an exported file &mdash; the same file either way. Nothing leaves this browser unless you press one of the buttons in the top bar, and FinSim works with no account at all.</p>
+        </section>
+
+        <div class="dlg-actions">
+            <button type="button" class="ghost-btn" id="dataClose">Close</button>
         </div>
     </div>
 </div>

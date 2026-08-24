@@ -69,7 +69,45 @@ function storeRaw(key, value) {
     // a one-way nudge. A write that did not land must not trigger one, or Drive
     // would be sent a copy that is already stale.
     if (ok && typeof window.FSDriveTouch === 'function') window.FSDriveTouch();
+
+    // A write that did not land must not claim a time. The stamp is the only
+    // sign anybody gets that the typing is being kept, and one that lies is
+    // worse than none at all.
+    if (ok) stampSaved();
     return ok;
+}
+
+/**
+ * ====================================================================
+ * "SAVED 20:02"
+ * --------------------------------------------------------------------
+ * The figures save themselves as you type. Nothing on the page has ever
+ * said so, and an app that keeps your money on faith alone is one people
+ * re-type into a spreadsheet just in case.
+ *
+ * It lives in localStorage rather than in the records: it is a handful of
+ * characters, it is wanted before the first paint, and it is not a figure
+ * anybody would want back out of a backup. The Drive stamp sits in the same
+ * place for the same reasons.
+ * ====================================================================
+ */
+const SAVED_KEY = 'finsim.saved';
+
+function stampSaved() {
+    try { localStorage.setItem(SAVED_KEY, new Date().toISOString()); } catch (err) { /* not vital */ }
+    paintSavedStamp();
+}
+
+function paintSavedStamp() {
+    let iso = null;
+    try { iso = localStorage.getItem(SAVED_KEY); } catch (err) { iso = null; }
+
+    // Empty until there is something to report — the stamp hides itself
+    // rather than sitting in the toolbar saying nothing.
+    if (!iso) return set('saveStamp', '');
+
+    const then = new Date(iso);
+    set('saveStamp', 'Saved ' + then.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
 }
 
 /**
@@ -427,9 +465,9 @@ const escapeHtml = (text) => String(text).replace(/[&<>"']/g,
 
 function savedWhen(item) {
     const then = new Date(item.savedAt);
-    return isNaN(then) ? 'earlier' : then.toLocaleString('en-MY', {
-        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-    });
+    // dd-mm-yyyy, like every other date on the page — see dmyStamp in app.js
+    // for why none of them is left to the browser's locale.
+    return isNaN(then) ? 'earlier' : dmyStamp(then);
 }
 
 /**
@@ -554,7 +592,9 @@ function countFilled(raw) {
                 // calculator in use. Under-counting a date somebody did change
                 // is the safer way to be wrong: it only ever means offering to
                 // restore from Drive when there was little to lose.
-                if (/^\d{4}-\d{2}-\d{2}$/.test(typed)) return false;
+                // Both ways round: dd-mm-yyyy is what the box holds now, and
+                // yyyy-mm-dd is what every backup written before it holds.
+                if (/^\d{2}-\d{2}-\d{4}$/.test(typed) || /^\d{4}-\d{2}-\d{2}$/.test(typed)) return false;
                 // A field the form knows about counts only if it starts blank;
                 // one it does not know about (a relief line) counts unless it is
                 // still sitting on the zero it was built with.
@@ -706,10 +746,94 @@ function flashButton(btn, html) {
 
 /**
  * ====================================================================
+ * THE DATA PANEL
+ * --------------------------------------------------------------------
+ * Where the figures are, and how much room is left before the browser
+ * starts caring. The top bar has four buttons about the *second* copy and
+ * nothing at all about the first — which is the one everybody's numbers are
+ * actually sitting in.
+ *
+ * It reads rather than does: every button that changes anything is already
+ * in the toolbar behind it.
+ * ====================================================================
+ */
+function openData() {
+    const scrim = $('dataBox');
+    if (!scrim) return;
+    paintStorage();
+    scrim.hidden = false;
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => { const b = $('dataClose'); if (b) b.focus(); }, 30);
+}
+
+function closeData() {
+    const scrim = $('dataBox');
+    if (scrim) scrim.hidden = true;
+    document.body.style.overflow = '';
+}
+
+function fmtSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    return (bytes / 1024 / 1024 / 1024).toFixed(1) + ' GB';
+}
+
+async function paintStorage() {
+    if (!haveStore()) {
+        set('dataWhere', 'In this browser’s localStorage.');
+        return set('dataUsed', '');
+    }
+
+    const backend = FSStore.backend();
+    const used    = FSStore.usage().reduce((sum, row) => sum + row.bytes, 0);
+    const budget  = await FSStore.measure();
+    const kept    = await FSStore.persisted();
+
+    set('dataWhere', backend === 'indexedDB'
+        ? 'In this browser, in IndexedDB.'
+            + (kept ? ' Marked to be kept — the browser will not clear it to free space.' : '')
+        : 'In this browser’s localStorage. IndexedDB was not available, so the ceiling is about'
+            + ' 5 MB — and FinSim shares that bucket with anything else published under the'
+            + ' same address.');
+
+    /* Against the ceiling rather than against itself: the question here is how
+       much room is left, and a bar that rescales to whatever is stored can
+       never answer it. */
+    const pct = Math.min(100, used / budget * 100);
+    const fill = $('dataMeterFill');
+    if (fill) {
+        fill.style.width = Math.max(0.4, pct).toFixed(2) + '%';
+        fill.className = pct > 90 ? 'is-over' : (pct > 70 ? 'is-warn' : '');
+    }
+
+    set('dataUsed', fmtSize(used) + ' of ' + fmtSize(budget)
+        + (pct < 1 ? ' — barely a dent' : ' — ' + pct.toFixed(1) + '%'));
+}
+
+/**
+ * ====================================================================
  * WIRING
  * ====================================================================
  */
 document.addEventListener('DOMContentLoaded', () => {
+    paintSavedStamp();
+
+    const stamp = $('saveStamp');
+    if (stamp) stamp.addEventListener('click', openData);
+
+    const dataScrim = $('dataBox');
+    if (dataScrim) {
+        $('dataClose').addEventListener('click', closeData);
+        // Clicking the backdrop is a close; clicking the card is not.
+        dataScrim.addEventListener('mousedown', (event) => {
+            if (event.target === dataScrim) closeData();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !dataScrim.hidden) closeData();
+        });
+    }
+
     const exportBtn = $('backupExport');
     if (exportBtn) exportBtn.addEventListener('click', () => exportBackup(exportBtn));
 

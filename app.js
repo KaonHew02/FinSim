@@ -1044,6 +1044,76 @@ const isoDate = (date) =>
     String(date.getMonth() + 1).padStart(2, '0') + '-' +
     String(date.getDate()).padStart(2, '0');
 
+/**
+ * ====================================================================
+ * DATES, THE WAY THIS COUNTRY WRITES THEM
+ * --------------------------------------------------------------------
+ * "24-08-2026". Day first, then month, then the year — one order for every
+ * date this page shows or takes, on every machine.
+ *
+ * It is written out by hand rather than left to `toLocaleDateString`,
+ * because a locale is a property of the *browser*, not of the app: the same
+ * page on a laptop set to US English says 08/24/2026, and a reader who has
+ * to work out which number is the month before they can read a deadline is
+ * being asked to do the app's job.
+ * ====================================================================
+ */
+const dmyDate = (date) =>
+    String(date.getDate()).padStart(2, '0') + '-' +
+    String(date.getMonth() + 1).padStart(2, '0') + '-' +
+    date.getFullYear();
+
+/** The same, with a clock on it: "24-08-2026, 20:02". 24-hour, so it stays six digits wide. */
+const dmyStamp = (date) => dmyDate(date) + ', '
+    + String(date.getHours()).padStart(2, '0') + ':'
+    + String(date.getMinutes()).padStart(2, '0');
+
+/**
+ * A typed date back to a `Date`, or `null` if it is not one yet.
+ *
+ * Generous about separators — a dash, a slash or a dot all read as the same
+ * thing, and eight bare digits do too — and it still understands the
+ * `YYYY-MM-DD` that the calendar picker and every backup written before this
+ * change speak. Strict about one thing only: a date that does not exist.
+ * `31-02-2026` rolls itself into March if you let it, and a deadline that
+ * silently moved is worse than one the box refuses.
+ */
+function parseDmy(text) {
+    const raw = String(text == null ? '' : text).trim();
+    if (!raw) return null;
+
+    let day, month, year;
+    let bits = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(raw);
+    if (bits) {
+        year = +bits[1]; month = +bits[2]; day = +bits[3];
+    } else {
+        bits = /^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{4})$/.exec(raw)
+            || /^(\d{2})(\d{2})(\d{4})$/.exec(raw);
+        if (!bits) return null;
+        day = +bits[1]; month = +bits[2]; year = +bits[3];
+    }
+
+    const out = new Date(year, month - 1, day);
+    return (out.getFullYear() === year && out.getMonth() === month - 1 && out.getDate() === day)
+        ? out : null;
+}
+
+/**
+ * Dashes as you type, but only while you are typing at the end of the box.
+ * The moment the caret is somewhere in the middle — fixing a month, say —
+ * this keeps its hands off, because a mask that reflows the text under a
+ * caret is a mask that fights whoever is using it.
+ */
+function maskDmy(el) {
+    if (!el || el.selectionStart !== el.value.length) return;
+
+    const digits = el.value.replace(/\D/g, '').slice(0, 8);
+    let out = digits.slice(0, 2);
+    if (digits.length > 2) out += '-' + digits.slice(2, 4);
+    if (digits.length > 4) out += '-' + digits.slice(4, 8);
+    el.value = out;
+}
+
 /** The same day of the month, `count` months on, held inside a shorter month. */
 function addMonths(date, count) {
     const out     = new Date(date.getFullYear(), date.getMonth() + count, 1);
@@ -2330,18 +2400,25 @@ function goalHorizon() {
     const today      = new Date();
     const cap = (m) => Math.min(GOAL_MAX_MONTHS, Math.max(1, m));
 
-    if (goalTimeBy === 'date' && dateField && dateField.value) {
-        const asked  = wholeMonthsBetween(today, new Date(dateField.value + 'T00:00:00'));
+    if (goalTimeBy === 'date') {
+        const want = parseDmy(dateField && dateField.value);
+
+        // Half a date is not a deadline. "24-08-20" on the way to 2026 must
+        // leave the months box leading and the typing alone — rewriting the
+        // box mid-keystroke would delete the year before it was finished.
+        if (!want) return cap(Math.round(num('goalMonths')));
+
+        const asked  = wholeMonthsBetween(today, want);
         const months = cap(asked);
         if (monthField) monthField.value = String(months);
         // A date already gone, or one past the fifty years the plan runs, is
         // pulled back to the nearest deadline that can actually be saved for.
-        if (months !== asked && dateField) dateField.value = isoDate(addMonths(today, months));
+        if (months !== asked) dateField.value = dmyDate(addMonths(today, months));
         return months;
     }
 
     const months = cap(Math.round(num('goalMonths')));
-    if (dateField) dateField.value = isoDate(addMonths(today, months));
+    if (dateField) dateField.value = dmyDate(addMonths(today, months));
     return months;
 }
 
@@ -3719,6 +3796,38 @@ document.addEventListener('DOMContentLoaded', () => {
     leadWith('plMonths', 'months', (m) => { plTenureBy = m; });
     leadWith('goalMonths', 'months', (m) => { goalTimeBy = m; });
     leadWith('goalDate', 'date', (m) => { goalTimeBy = m; });
+
+    // The dd-mm-yyyy box and the calendar behind it. Both are registered here,
+    // above the general wiring, so the text is already tidy and the flag
+    // already set by the time the same event reaches renderAll.
+    const goalDateBox = $('goalDate');
+    if (goalDateBox) goalDateBox.addEventListener('input', () => maskDmy(goalDateBox));
+
+    // Found by class rather than by id on purpose: everything with an id inside
+    // a module goes into every snapshot and every backup, and the picker holds
+    // nothing worth saving — it is a calendar, not a figure.
+    const goalPicker = goalDateBox && goalDateBox.parentElement
+        ? goalDateBox.parentElement.querySelector('.date-native') : null;
+    const goalPickBtn = $('goalDatePick');
+    if (goalDateBox && goalPicker && goalPickBtn) {
+        goalPickBtn.addEventListener('click', () => {
+            const current = parseDmy(goalDateBox.value);
+            goalPicker.value = current ? isoDate(current) : '';
+            // showPicker() is the only way to open a calendar from another
+            // control; where it is missing the field simply stays typed-only.
+            if (typeof goalPicker.showPicker === 'function') {
+                try { goalPicker.showPicker(); return; } catch (err) { /* fall through */ }
+            }
+            goalDateBox.focus();
+        });
+
+        goalPicker.addEventListener('change', () => {
+            const picked = parseDmy(goalPicker.value);
+            if (!picked) return;
+            goalDateBox.value = dmyDate(picked);
+            goalTimeBy = 'date';
+        });
+    }
     leadWith('rbDown', 'rm', (m) => { rbDownBy = m; });
     leadWith('rbDownPct', 'pct', (m) => { rbDownBy = m; });
 
