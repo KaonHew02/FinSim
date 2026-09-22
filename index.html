@@ -2,14 +2,83 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+
+    <!--
+        What this page is allowed to run, and where it may talk to.
+
+        A calculator that keeps somebody's salary has one thing worth stealing
+        and one way to steal it: get JavaScript to run on this origin. The
+        second half matters more than it looks — GitHub Pages puts every
+        project under one account on the *same* origin, so script running here
+        can read what every other project of ours has stored, not just FinSim's.
+
+        The rule that does the work is `script-src` with no `'unsafe-inline'`:
+        an `onerror=` attribute that arrives inside a record does not run, and
+        an injected `<script>` does not run, whatever mistake upstream let it
+        onto the page. That is a second lock rather than the first one — the
+        code no longer builds markup out of stored text (see save.js) — but the
+        whole point of a second lock is that it holds when the first is picked.
+
+        `object-src 'none'` and `base-uri 'self'` close the two classic ways
+        around such a rule; `form-action 'self'` means nothing on this page can
+        be made to post the figures somewhere else.
+
+        `style-src` keeps `'unsafe-inline'`, and that is a decision rather than
+        an oversight. Google's sign-in library puts a `<style>` block of its own
+        into this page's head, and a strict style rule drops it — so the choice
+        was between a marginal tightening and a sign-in button that may not look
+        like one. Inline *style* is not how a page gets taken over; inline
+        *script* is, and that is the rule kept strict. Anyone wanting the last
+        few percent can pin Google's block by its hash instead, at the cost of
+        having to re-pin it whenever Google changes that stylesheet.
+
+        The Google entries are what the Drive backup needs and nothing more:
+        their sign-in library, their sign-in frame, and the Drive API this app
+        calls. Remove the three and Drive stops working; everything else on the
+        page carries on, which is the same promise drive.js makes.
+
+        A note on what this cannot do: `frame-ancestors`, the anti-clickjacking
+        rule, is ignored when a policy is delivered in a <meta> tag — it has to
+        be a real HTTP header, and GitHub Pages does not let us set one. Moving
+        to a host that does is the only fix; there is no markup for it.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        base-uri 'self';
+        object-src 'none';
+        form-action 'self';
+        script-src 'self' https://accounts.google.com;
+        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://accounts.google.com;
+        font-src 'self' https://cdn.jsdelivr.net;
+        img-src 'self' data: https://*.googleusercontent.com;
+        connect-src 'self' https://accounts.google.com https://www.googleapis.com;
+        frame-src https://accounts.google.com;
+    ">
+
+    <!-- Send the origin, never the path. Nothing in a FinSim URL is private
+         today, and this is how it stays that way if that ever changes. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinSim — Malaysia Money Calculators</title>
     <link rel="icon" type="image/svg+xml" href="FinSimMark.svg">
     <link rel="icon" type="image/png" sizes="512x512" href="FinSimMark.png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- `integrity` is the CDN's homework being marked. jsDelivr is a third
+         party serving a file onto our origin; if the file it sends back is ever
+         not the one this hash was taken from — a bad day at the CDN, or a bad
+         actor in it — the browser drops it rather than applying it. The hash is
+         pinned to 1.11.3, so bumping the version means recomputing it:
+             curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+"
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
+
     <!-- ?v= is bumped whenever the CSS or JS changes: GitHub Pages sends a long
          cache life, and a phone will otherwise keep the old file for days. -->
-    <link rel="stylesheet" href="style.css?v=13">
+    <link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
 
@@ -215,7 +284,7 @@
         <section id="pcb-module" class="module is-active">
             <div class="split">
 
-                <form class="card panel" id="pcb-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="pcb-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>Your salary</h2>
                         <button type="button" class="ghost-btn" data-reset="pcb">
@@ -374,7 +443,7 @@
         <section id="tax-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="tax-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="tax-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>Your year</h2>
                         <button type="button" class="ghost-btn" data-reset="tax">
@@ -479,7 +548,7 @@
         <section id="home-loan-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="loan-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="loan-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>The property</h2>
                         <button type="button" class="ghost-btn" data-reset="loan">
@@ -695,7 +764,7 @@
         <section id="car-loan-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="car-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="car-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>The car</h2>
                         <button type="button" class="ghost-btn" data-reset="car">
@@ -938,7 +1007,7 @@
         <section id="personal-loan-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="personal-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="personal-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>What you are borrowing</h2>
                         <button type="button" class="ghost-btn" data-reset="personal">
@@ -1192,7 +1261,7 @@
         <section id="dsr-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="dsr-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="dsr-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>Your income</h2>
                         <button type="button" class="ghost-btn" data-reset="dsr">
@@ -1512,7 +1581,7 @@
         <section id="goal-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="goal-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="goal-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>Your goal</h2>
                         <button type="button" class="ghost-btn" data-reset="goal">
@@ -1733,7 +1802,7 @@
         <section id="epf-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="epf-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="epf-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>Your contribution</h2>
                         <button type="button" class="ghost-btn" data-reset="epf">
@@ -1979,7 +2048,7 @@
         <section id="compound-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="compound-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="compound-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>Your investment</h2>
                         <button type="button" class="ghost-btn" data-reset="compound">
@@ -2212,7 +2281,7 @@
         <section id="retire-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="retire-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="retire-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>Your retirement</h2>
                         <button type="button" class="ghost-btn" data-reset="retire">
@@ -2488,7 +2557,7 @@
         <section id="networth-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="networth-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="networth-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>What you own, what you owe</h2>
                         <button type="button" class="ghost-btn" data-reset="networth">
@@ -2701,7 +2770,7 @@
         <section id="fund-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="fund-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="fund-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>Your safety net</h2>
                         <button type="button" class="ghost-btn" data-reset="fund">
@@ -3011,7 +3080,7 @@
         <section id="rentbuy-module" class="module">
             <div class="split">
 
-                <form class="card panel" id="rentbuy-form" autocomplete="off" onsubmit="return false;">
+                <form class="card panel" id="rentbuy-form" autocomplete="off">
                     <div class="panel-head">
                         <h2>Rent or buy</h2>
                         <button type="button" class="ghost-btn" data-reset="rentbuy">
@@ -3400,15 +3469,15 @@
     </div>
 </div>
 
-<script src="store.js?v=13"></script>
-<script src="app.js?v=13"></script>
-<script src="save.js?v=13"></script>
+<script src="store.js?v=14"></script>
+<script src="app.js?v=14"></script>
+<script src="save.js?v=14"></script>
 
 <!-- Google's sign-in library, and the two files that use it. Everything above
      works without them: if this script is blocked, the Drive buttons say so
      and Export/Import carry on. -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="drive-config.js?v=13"></script>
-<script src="drive.js?v=13"></script>
+<script src="drive-config.js?v=14"></script>
+<script src="drive.js?v=14"></script>
 </body>
 </html>

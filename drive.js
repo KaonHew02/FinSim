@@ -267,12 +267,19 @@
                     + 'this becomes the way to get those figures onto another computer.');
             }
 
-            const envelope = await readFile(id);
-            if (!envelope || envelope.format !== 'finsim.backup') {
+            const fromDrive = await readFile(id);
+            if (!fromDrive || typeof fromDrive !== 'object' || fromDrive.format !== 'finsim.backup') {
                 return backupSay('That Drive file is not readable',
                     'The file in the folder is not a FinSim backup. Rename or remove it and '
                     + 'press “To Drive” to write a fresh one.');
             }
+
+            // A file in a Drive folder is not this app's handwriting, however
+            // it got there — it can be edited in Drive, and a shared folder has
+            // more than one pair of hands on it. So it goes through the same
+            // reading an imported file does, and the dialog below describes
+            // what survived it rather than what the file claims.
+            const envelope = cleanEnvelope(fromDrive);
 
             // Drive answers in RFC 3339, which starts with a yyyy-mm-dd nobody
             // here reads dates in. Turn it round; say so plainly if it is absent.

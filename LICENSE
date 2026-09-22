@@ -1,0 +1,39 @@
+FinSim — Malaysia Money Calculators
+Copyright (c) 2026 Kaon (github.com/KaonHew02). All rights reserved.
+
+This software and its source code are proprietary. No permission is granted to
+copy, modify, merge, publish, distribute, sublicense, sell, or create derivative
+works from any part of it, in source or compiled form, without the prior written
+permission of the copyright holder.
+
+You may:
+  - use the published site at its official address, for your own personal use;
+  - read the source, and quote short excerpts with attribution, for the purpose
+    of study, review, or discussion.
+
+You may not:
+  - republish this work, in whole or in substantial part, under your own name or
+    at your own address, whether or not the code has been renamed, reformatted,
+    minified, obfuscated, or machine-translated into another language;
+  - remove or alter this notice, the copyright headers, or the attribution shown
+    in the application.
+
+
+A NOTE ON WHAT THIS DOES AND DOES NOT DO
+----------------------------------------
+This file is a statement of terms, not a lock. It cannot stop anyone from
+downloading the code — nothing can, because a browser has to be given the code
+in order to run it. What it does is remove the defence of "there was no licence,
+so I assumed it was free to take". Without this file, a public repository is
+widely *treated* as fair game even though copyright still applies by default;
+with it, the terms are explicit and on the record, dated, and in version
+control.
+
+That is the whole of the realistic protection available to a client-side web
+application, and it is worth more than obfuscation, which delays a determined
+reader by minutes and costs you debuggability forever.
+
+While the repository at github.com/KaonHew02/FinSim remains public, GitHub's own
+Terms of Service additionally allow any GitHub user to view and fork it within
+GitHub. Making the repository private is the only way to withdraw that, and it
+is a separate decision with consequences for hosting — see BUILD.md.

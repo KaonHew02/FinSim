@@ -329,13 +329,96 @@ function finsimRestore() {
  * the home loan and nothing else — you are comparing two mortgages, not two
  * versions of your whole financial life.
  */
+/**
+ * ====================================================================
+ * WHAT A RECORD IS ALLOWED TO BE
+ * --------------------------------------------------------------------
+ * This used to say "the stored copy is untrusted" and then check three fields
+ * for being non-empty, which is a different and much smaller claim. A record
+ * reaches this function from three places — the store, an imported file, and a
+ * Drive file — and only the first was ever written by this app. So untrusted
+ * has to mean the *shape* is checked, not merely that something is there.
+ *
+ *   - An **id** is this app's own handwriting and nothing else's. It is written
+ *     into a DOM attribute and matched back out of one, so anything outside
+ *     `[A-Za-z0-9_-]` has no business in it. Every id this file has ever
+ *     minted — `s` plus a base-36 clock — already fits, so nothing anyone has
+ *     actually saved is refused by this.
+ *   - A **name** is a person's own words and may hold anything at all: it is
+ *     drawn with `textContent` now, so quotes and angle brackets in a name are
+ *     just characters. What it may not be is unbounded — the box that types
+ *     one stops at 40 characters, a file can say a megabyte, and a limit that
+ *     only exists in the markup is not a limit.
+ *   - A **module** must name a calculator that is on this page.
+ *   - A **snapshot** is a flat map of field id to a plain value. Anything
+ *     nested, or a value that is not a primitive, is not something this app
+ *     ever wrote and not something `applyModule` knows how to put back.
+ *
+ * A record that fails is dropped rather than repaired. There is no honest way
+ * to guess what a malformed scenario meant, and a half-restored one is worse
+ * than a missing one.
+ * ====================================================================
+ */
+const SAFE_SCENARIO_ID = /^[A-Za-z0-9_-]{1,64}$/;
+const SCENARIO_NAME_MAX = 40;
+
+/** Field maps hold what an `<input>` holds: a string, a number, or a tick. */
+const cleanFieldMap = (map) => {
+    const out = {};
+    if (!map || typeof map !== 'object' || Array.isArray(map)) return out;
+
+    Object.entries(map).forEach(([id, value]) => {
+        if (typeof id !== 'string' || !id) return;
+        const kind = typeof value;
+        if (kind === 'string' || kind === 'number' || kind === 'boolean') out[id] = value;
+    });
+    return out;
+};
+
+function cleanSnapshot(snap) {
+    if (!snap || typeof snap !== 'object' || Array.isArray(snap)) return { f: {}, c: {}, s: {} };
+
+    const out = { f: cleanFieldMap(snap.f), c: cleanFieldMap(snap.c), s: cleanFieldMap(snap.s) };
+
+    // `x` is whatever one calculator keeps besides its boxes — which way a
+    // deposit was entered, and the EPF year rates. Only the shapes applyExtras
+    // can actually use survive; a string where it expects an array would reach
+    // `.slice()` and hand back something that is not a list.
+    if (snap.x && typeof snap.x === 'object' && !Array.isArray(snap.x)) {
+        const x = {};
+        ['downBy', 'settleBy', 'tenureBy', 'timeBy'].forEach((key) => {
+            if (typeof snap.x[key] === 'string') x[key] = snap.x[key];
+        });
+        if (Array.isArray(snap.x.rates)) {
+            x.rates = snap.x.rates.filter((rate) => typeof rate === 'number' || typeof rate === 'string');
+        }
+        out.x = x;
+    }
+
+    return out;
+}
+
+function validScenario(item, known) {
+    if (!item || typeof item !== 'object') return null;
+    if (typeof item.id !== 'string' || !SAFE_SCENARIO_ID.test(item.id)) return null;
+    if (typeof item.name !== 'string' || !item.name.trim()) return null;
+    if (typeof item.module !== 'string' || !known.has(item.module)) return null;
+
+    return {
+        id:      item.id,
+        module:  item.module,
+        name:    item.name.slice(0, SCENARIO_NAME_MAX),
+        savedAt: typeof item.savedAt === 'string' ? item.savedAt : '',
+        snap:    cleanSnapshot(item.snap),
+    };
+}
+
 function loadScenarios() {
     const stored = storedJson(SCENARIOS_KEY, null);
     const items = (stored && Array.isArray(stored.items)) ? stored.items : [];
 
-    // The stored copy is untrusted: a scenario pointing at a calculator that no
-    // longer exists would draw a chip that can never be loaded.
-    return items.filter((item) => item && item.id && item.name && document.getElementById(item.module));
+    const known = new Set(moduleIds());
+    return items.map((item) => validScenario(item, known)).filter(Boolean);
 }
 
 function saveScenarios(items) {
@@ -437,29 +520,78 @@ function buildScenarioBars() {
     });
 }
 
+/**
+ * The chips are **built, not written**.
+ *
+ * This was one string of HTML joined together, and a scenario's `id` went into
+ * `data-id="…"` exactly as it was found. An id is normally this file's own
+ * handwriting — `s` and a base-36 clock — but a scenario can also arrive from
+ * an imported file or from a Drive file, and neither of those is handwriting
+ * this app can vouch for. An id of
+ *
+ *     x"><img src=x onerror=…>
+ *
+ * closed the attribute, closed the span, and left a live element on the page.
+ * It ran without being clicked, and it came back on every reload, because by
+ * then it was in the store — which is exactly what a tampered record looks
+ * like from the outside: a change that survives a refresh.
+ *
+ * Escaping the id would have shut that one line. Building nodes shuts the
+ * shape: `textContent` and `dataset` cannot be talked out of being text, no
+ * matter what is put in them, so there is no longer a line here that *could*
+ * be got wrong. `validScenario` above is the second lock — the record never
+ * gets this far unless it is the right shape to begin with.
+ */
 function renderScenarioBar(moduleId) {
     const host = document.querySelector('#' + moduleId + ' .scen-chips');
     if (!host) return;
 
     const items = scenariosFor(moduleId);
 
+    host.textContent = '';
+
     if (!items.length) {
-        host.innerHTML = '<span class="scen-empty">Nothing saved yet &mdash; '
-            + '<b>Save</b> keeps these figures to come back to.</span>';
+        const empty = document.createElement('span');
+        empty.className = 'scen-empty';
+        const word = document.createElement('b');
+        word.textContent = 'Save';
+        empty.append('Nothing saved yet — ', word, ' keeps these figures to come back to.');
+        host.appendChild(empty);
         return;
     }
 
-    host.innerHTML = items.map((item) =>
-        '<span class="scen-chip" data-id="' + item.id + '">'
-        + '<button type="button" class="scen-load" title="Saved ' + savedWhen(item) + '">'
-        + escapeHtml(item.name) + '</button>'
-        + '<button type="button" class="scen-del" aria-label="Delete ' + escapeHtml(item.name)
-        + '"><i class="bi bi-x"></i></button>'
-        + '</span>').join('');
+    items.forEach((item) => {
+        const chip = document.createElement('span');
+        chip.className = 'scen-chip';
+        chip.dataset.id = item.id;
+
+        const load = document.createElement('button');
+        load.type = 'button';
+        load.className = 'scen-load';
+        load.title = 'Saved ' + savedWhen(item);
+        load.textContent = item.name;
+
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'scen-del';
+        del.setAttribute('aria-label', 'Delete ' + item.name);
+        const cross = document.createElement('i');
+        cross.className = 'bi bi-x';
+        del.appendChild(cross);
+
+        chip.append(load, del);
+        host.appendChild(chip);
+    });
 
     markActiveChips(moduleId);
 }
 
+/**
+ * Kept for anything that still has to hand a string to `innerHTML`. Nothing in
+ * this file does any more, and the reason is two paragraphs up: a helper that
+ * has to be remembered at every call site is one that will eventually be
+ * forgotten at one of them.
+ */
 const escapeHtml = (text) => String(text).replace(/[&<>"']/g,
     (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
@@ -611,8 +743,74 @@ function countFilled(raw) {
  * start-up — putting new values in the stores without it changes nothing you
  * can see.
  */
+/**
+ * A file, reduced to the parts of it this app recognises.
+ *
+ * `backupApply` used to take whatever a file said a store held and write it
+ * into the store as-is, on the strength of one string — `"format":
+ * "finsim.backup"` — which anybody can type. Everything downstream then
+ * treated it as this app's own writing, because by then it was in this app's
+ * own store and indistinguishable from it.
+ *
+ * So a file is not applied; it is **read, and a new one is written from what
+ * was understood**. Anything unrecognised does not survive the trip — not
+ * because it is known to be harmful, but because nothing here knows what it
+ * is, and a store is not a good place to keep things nobody can account for.
+ *
+ * This is deliberately the choke point rather than the importer: a file also
+ * arrives from Drive, and that route calls straight through to `backupApply`.
+ * One door, one lock.
+ */
+function cleanStores(stores) {
+    const out = {};
+    if (!stores || typeof stores !== 'object') return out;
+
+    const known = new Set(moduleIds());
+    const asObject = (value) => (value && typeof value === 'object' && !Array.isArray(value)) ? value : null;
+
+    const reread = (raw) => {
+        if (typeof raw !== 'string') return null;
+        try { return JSON.parse(raw); } catch (err) { return null; }
+    };
+
+    const scenarios = reread(stores[SCENARIOS_KEY]);
+    if (scenarios) {
+        const items = Array.isArray(scenarios.items) ? scenarios.items : [];
+        out[SCENARIOS_KEY] = JSON.stringify({
+            v: 1,
+            items: items.map((item) => validScenario(item, known)).filter(Boolean),
+        });
+    }
+
+    const inputs = reread(stores[INPUTS_KEY]);
+    if (inputs) {
+        const modules = {};
+        Object.entries(asObject(inputs.modules) || {}).forEach(([id, snap]) => {
+            if (known.has(id)) modules[id] = cleanSnapshot(snap);
+        });
+
+        out[INPUTS_KEY] = JSON.stringify({
+            v: 1,
+            savedAt: typeof inputs.savedAt === 'string' ? inputs.savedAt : new Date().toISOString(),
+            active:  known.has(inputs.active) ? inputs.active : null,
+            modules,
+        });
+    }
+
+    return out;
+}
+
+/** The same envelope with only the parts of it that survived the reading. */
+const cleanEnvelope = (envelope) => ({
+    format:  'finsim.backup',
+    version: 1,
+    app:     'FinSim',
+    savedAt: (envelope && typeof envelope.savedAt === 'string') ? envelope.savedAt : '',
+    stores:  cleanStores(envelope && envelope.stores),
+});
+
 function backupApply(envelope) {
-    const stores = (envelope && envelope.stores) || {};
+    const stores = cleanStores(envelope && envelope.stores);
 
     BACKUP_STORES.forEach((key) => {
         if (stores[key] === undefined) {
@@ -645,7 +843,23 @@ function exportBackup(btn) {
     if (btn) flashButton(btn, '<i class="bi bi-check-lg"></i><span>Saved</span>');
 }
 
+/**
+ * A backup of thirteen calculators and a few dozen scenarios is tens of
+ * kilobytes. A ceiling four hundred times that refuses nothing anyone could
+ * have exported, and stops the tab being asked to parse a gigabyte that was
+ * never a backup — which is not an attack so much as a mis-click on a video
+ * file, and locks the page up just the same.
+ */
+const BACKUP_MAX_BYTES = 8 * 1024 * 1024;
+
 function importBackup(file) {
+    if (file && file.size > BACKUP_MAX_BYTES) {
+        return backupSay('That file is too big to be a FinSim backup',
+            'A backup of everything this app holds is a few tens of kilobytes. '
+            + 'This one is ' + Math.round(file.size / 1024 / 1024) + ' MB, so it is '
+            + 'almost certainly not the file you meant.');
+    }
+
     const reader = new FileReader();
 
     reader.onerror = () => backupSay('That file could not be read',
@@ -655,19 +869,25 @@ function importBackup(file) {
         let envelope = null;
         try { envelope = JSON.parse(reader.result); } catch (err) { envelope = null; }
 
-        if (!envelope || envelope.format !== 'finsim.backup') {
+        if (!envelope || typeof envelope !== 'object' || envelope.format !== 'finsim.backup') {
             return backupSay('That is not a FinSim backup',
                 'A FinSim backup is the JSON file Export writes — it starts with '
                 + '"format": "finsim.backup". A file from another app cannot be read here.');
         }
 
+        // Summarised **after** the reading, not before: the dialog has to
+        // describe what will actually land, not what the file claims. A file
+        // saying it holds forty scenarios, of which two are the right shape,
+        // is a file that holds two.
+        const cleaned = cleanEnvelope(envelope);
+
         askConfirm(
             'Replace what is in this browser?',
-            'The file holds ' + backupSummary(envelope) + '. This browser holds '
+            'The file holds ' + backupSummary(cleaned) + '. This browser holds '
             + backupSummary(backupEnvelope()) + ', and all of it will be replaced. '
             + 'The page reloads afterwards.',
             'Use the file',
-            () => backupApply(envelope));
+            () => backupApply(cleaned));
     };
 
     reader.readAsText(file);

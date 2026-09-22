@@ -3680,6 +3680,18 @@ function setNav(open) {
 function closeNav() { setNav(false); }
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Every panel is a <form>, so that a phone keyboard offers "next" between
+    // boxes and Enter does something sensible. None of them submits anywhere —
+    // the figures never leave the page. This was thirteen `onsubmit="return
+    // false;"` attributes in the markup, and one inline handler is all it takes
+    // to need `'unsafe-inline'` in the script rule of the Content-Security-Policy
+    // — which is the rule that stops an injected `onerror=` running. Thirteen
+    // attributes were not worth surrendering that, so they are bound here.
+    document.querySelectorAll('form').forEach((form) => {
+        form.addEventListener('submit', (event) => event.preventDefault());
+    });
+
     document.querySelectorAll('.nav-item').forEach((item) => {
         item.addEventListener('click', () => {
             switchModule(item.dataset.module);
