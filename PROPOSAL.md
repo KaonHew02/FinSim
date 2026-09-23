@@ -1,737 +1,428 @@
 # FinSim — Project Proposal
 
-Version 2.0 · 23 September 2026 · Prepared by Kaon Hew
+**Malaysia Money Calculators**
 
-> The same proposal is in the repository as a Word document with a cover page, contents and a sign-off page: `FinSim-Project-Proposal.docx`.
+23 September 2026 · Kaon · Revision 3
 
-| Document control | Detail |
+*A formatted edition of this proposal, with a cover page, contents and diagrams, sits beside it as [FinSim-Project-Proposal.docx](FinSim-Project-Proposal.docx) and [FinSim-Project-Proposal.pdf](FinSim-Project-Proposal.pdf). This Markdown file is the source; the two are generated from it.*
+
+## Executive summary
+
+FinSim is a set of thirteen Malaysian money calculators on one web page — payslip to retirement — computed from KWSP, LHDN and PERKESO rules rather than generic overseas formulas. There is no server, no account and no monthly fee. A working build is already live at [kaonhew02.github.io/FinSim](https://kaonhew02.github.io/FinSim/), carrying all thirteen calculators across 11,057 lines of hand-written HTML, CSS and JavaScript with no framework and no runtime dependency. Since 22 September 2026 it also runs under a strict Content-Security-Policy and rebuilds every imported or Drive file from scratch before a byte of it is trusted.
+
+The product exists because the calculators people already use get the arithmetic right and the statute wrong — and the ones that get the statute right answer one question and stop, so the net pay a bank divides by has to be worked out again by hand.
+
+|  |  |
 | --- | --- |
-| Document | Project proposal |
-| Project | FinSim — Malaysia Money Calculators |
-| Version | 2.0 — supersedes the draft of 22 September 2026 |
-| Date | 23 September 2026 |
-| Prepared by | Kaon Hew |
-| Repository | [github.com/KaonHew02/FinSim](https://github.com/KaonHew02/FinSim) |
-| Live site | [kaonhew02.github.io/FinSim](https://kaonhew02.github.io/FinSim/) |
-| Status | For review and approval |
+| Product | FinSim — *Simulate your financial future.* |
+| Category | Personal-finance calculators and planning simulator |
+| Primary user | A Malaysian salaried adult working out their own money in ringgit |
+| Delivered | 13 of 13 calculators live; autosave, named scenarios, Export/Import and an optional Google Drive copy |
+| Rules built in | YA 2026 — LHDN brackets and 23 reliefs, EPF Third Schedule, PERKESO SOCSO and EIS tables, Stamp Act tiers |
+| Stack | Static site on GitHub Pages · IndexedDB · optional Google Drive copy |
+| Security | Strict Content-Security-Policy · every import rebuilt and validated · SRI on the one CDN stylesheet |
+| Dependencies | No framework, no npm package at runtime, no API key; the build step is optional |
+| Running cost | RM 0/month — hosting, storage and backup are all free tiers or the reader's own disk |
+| Effort to date | 25 commits, 17 Aug 2026 – 23 Sep 2026 |
+| Proposed next phase | 10 weeks: a committed test suite, rules keyed by year of assessment, offline install, two new modules |
 
-### Version history
+**The ask.** Approval to run the ten-week Phase 4 in [Project plan and timeline](#project-plan-and-timeline) at the resourcing set out in [Resources and budget](#resources-and-budget) — one developer, part-time (\~100 hours), and RM 0 committed.
 
-| Version | Date | Change |
-| --- | --- | --- |
-| 1.0 | 22 Sep 2026 | First draft — scope, architecture, delivery phases, risks and costs, written up from the build as it stood. |
-| 2.0 | 23 Sep 2026 | Brought up to date with the security hardening of 22 September (Content-Security-Policy, import validation, licence, optional build). Adds objectives, intended users, a specification for every module, security and privacy, build and deployment, the statutory parameters, a glossary, the commit history and a sign-off page. |
+## Background and problem statement
 
-## 1. Executive summary
+The problem is not that money calculators do not exist — every bank has one on its website. It is that each of them answers one question, for one product, on somebody else's assumptions, and none of them agrees with the next. A payslip calculator will not hand its net figure to a debt-service calculator; a loan calculator does not know what the stamp duty on the house will be; a retirement calculator does not know that EPF credits a dividend weighted by the months the money was held.
 
-FinSim is a Malaysian personal-finance simulator: thirteen calculators on one web page, computed from KWSP (EPF), LHDN and PERKESO rules rather than generic overseas formulas. A working build is already live at [kaonhew02.github.io/FinSim](https://kaonhew02.github.io/FinSim/), with no account, no server and no running cost.
+FinSim began on 17 August 2026 as thirteen calculators written against Malaysian rules from the first line. Persistence arrived on 20 August, the mobile layout on 21 August, and a security hardening on 22 September after a crafted backup file was shown to run its own code in the page.
 
-This proposal asks for approval to take FinSim from a finished prototype to a maintained product over four phases: an annual statutory-rules refresh, a committed test suite with an accessibility audit, offline install, and a second wave of modules. Phases 1 to 3 are about three weeks of part-time work and add no running cost.
+### What the alternatives get wrong
 
-Since the first draft on 22 September 2026, the project has closed its most serious defect: a stored cross-site-scripting (XSS) hole in the scenario chips. It has also added a Content-Security-Policy, validation of every imported file, a licence and an optional minifying build. Those changes are reflected throughout this version.
-
-| At a glance | Detail |
+| Option | What it costs the user |
 | --- | --- |
-| Status | Prototype complete and deployed — 24 commits, 17 August to 22 September 2026 |
-| Live | [kaonhew02.github.io/FinSim](https://kaonhew02.github.io/FinSim/) |
-| Repository | [KaonHew02/FinSim](https://github.com/KaonHew02/FinSim) (public) |
-| Codebase | 11,057 lines across 7 runtime files, plus a 164-line optional build script |
-| Documentation | `README.md`, `MODULES.md` (every formula and assumption), `BUILD.md`, `docs/DRIVE.md`, `LICENSE` |
-| Modules | 13 calculators in 4 groups — Tax, Loans, Savings, Financial Planning |
-| Stack | Plain HTML, CSS and JavaScript. No framework, no runtime dependencies, and a build step that is optional |
-| Backend | None. Records live in the reader's own browser (IndexedDB) |
-| Running cost | RM 0 per month on GitHub Pages |
-| Biggest gap | No automated tests in the repository |
-| The ask | Approve Phases 1–3, decide on Phase 4, and settle the decisions in Section 17 |
+| A bank's own calculator | One product, one bank's assumptions, and built to sell that loan rather than compare it |
+| Generic online calculators | EPF at a flat 11%, monthly tax as annual tax ÷ 12, car loans on a reducing balance — the arithmetic is right and the statute is not |
+| Payroll calculators | Accurate for the payslip, but a payslip is one question of thirteen and the net figure goes nowhere |
+| Planning apps with accounts | Salary, debts and net worth handed to someone else's server to get an answer |
+| A spreadsheet | Private and flexible, but every statutory table is re-typed by hand and one wrong cell is silent |
 
-## 2. Background and problem statement
+### The Malaysian gap
 
-Malaysians working out their own money mostly have to use tools that get Malaysian rules wrong. The arithmetic in a generic calculator is right, but the statutory rules it is built on are not.
+International tools are built for other people's payslips. EPF is not 11% of salary: the Third Schedule takes the wage to the top of its RM 20 band and rounds the contribution **up** to the ringgit. SOCSO and EIS come from PERKESO tables with a RM 6,000 ceiling. Monthly tax is LHDN's annualised MTD, with a bonus taxed separately as additional remuneration in the month it is paid. A car is bought on hire purchase, which is flat-rate under the Hire-Purchase Act 1967 — so the effective rate is roughly **double** the one on the quote — and settling early returns only the Rule of 78 rebate, barely a quarter of the charges halfway through a seven-year loan. A house carries MOT stamp duty in four tiers, 0.5% on the loan agreement, the solicitors' remuneration scale charged twice, and 8% SST on top. EPF has been three accounts since May 2024. None of that is a setting in a foreign calculator.
 
-| What a generic calculator does | What Malaysian rules actually say |
-| --- | --- |
-| EPF as a flat 11% of salary | Third Schedule — the wage is taken to the top of its RM 20 band and the contribution rounded up to the ringgit |
-| No SOCSO or EIS, or a flat percentage | PERKESO contribution tables, with a RM 6,000 wage ceiling |
-| Monthly tax as annual tax ÷ 12 | LHDN's annualised MTD method, with a bonus taxed separately as additional remuneration |
-| Car loan interest on a reducing balance | Hire purchase is flat-rate under the Hire-Purchase Act 1967, so the effective rate is roughly double the quoted one |
-| Early settlement as the outstanding balance | Rule of 78 rebate. Halfway through a 7-year loan it returns barely a quarter of the charges |
-| A property priced at the asking price | MOT stamp duty tiers, 0.5% loan-agreement duty, the solicitors' remuneration scale, 8% SST and disbursements |
-| One EPF account | Akaun 1 / 2 / 3 at 75 / 15 / 10 since the May 2024 restructure |
+### The design flaw underneath all of it
 
-Three further problems add to that.
+Every standalone calculator re-derives the figures it needs, so two calculators on the same salary disagree the moment one of them rounds differently. And most of them state their answer to the sen with no word about what they assumed, so a thirty-year projection reads as a prediction rather than a direction. FinSim's founding constraint is the opposite on both counts: **one calculation library, used by every module, and every assumption stated on screen.**
 
-1. **The tools don't talk to each other.** A payslip calculator will not hand its net figure to a DSR calculator, so the number a bank divides by has to be worked out again by hand.
-2. **Most want an account.** Salary, debts and net worth are among the most sensitive figures a person has, and signing up puts them on someone else's server.
-3. **Assumptions are hidden.** A projection shown to the sen, with no note on what it assumed, reads like a prediction when it is only a direction.
+## Proposed solution
 
-## 3. Objectives
+FinSim is thirteen calculators sharing one calculation library, delivered as a static web page that keeps every figure on the reader's own machine. There is no account to create, no server to trust and nothing to cancel.
 
-Each objective is something that can be checked by running the app, not a usage target. The product deliberately collects no usage data (Section 16).
+### One library, thirteen answers
 
-| # | Objective | Measured by |
-| --- | --- | --- |
-| O1 | **Accuracy.** Reproduce the published Malaysian tables rather than approximate them | Payroll figures agree with payroll.my to the sen for the current assessment year |
-| O2 | **Privacy.** No account, no telemetry, no figure leaving the browser by default | The only outbound request is to Google Drive, and only after a button press or with Auto switched on |
-| O3 | **Coherence.** One calculation library shared by every module | The net pay in the PCB calculator is the net pay the DSR calculator divides by |
-| O4 | **Transparency.** Assumptions stated on screen | Every module carries a note naming what it assumes and what it does not model |
-| O5 | **Durability.** Figures survive a reload, a cleared browser and a second device | Autosave, Export/Import and the Drive copy all round-trip without loss |
-| O6 | **Maintainability.** A Budget refresh is an edit in one place, protected by tests | Every movable figure is a named constant, and CI runs the suite on every push (Phase 2) |
-| O7 | **Zero running cost.** | Static hosting only — no server, database or paid service |
-
-## 4. Intended users and use cases
-
-FinSim is written for someone in Malaysia working out their own money, not for advisers or institutions. The modules were designed around these situations:
-
-| Situation | What the reader wants to know | Modules |
-| --- | --- | --- |
-| Starting a job, or a change in salary | What lands in my account, and what my employer pays on top | PCB, EPF |
-| Filing the annual return (BE form) | What I owe, and which reliefs are worth claiming | Income Tax |
-| Buying a first home | The instalment, the entry costs, whether the bank will lend, and whether buying beats renting | Home Loan, DSR, Rent vs Buy |
-| Buying a car | What a flat hire-purchase rate really costs, and what settling early saves | Car Loan |
-| Borrowing for something else | Flat against reducing, and how much more a bank will lend | Personal Loan, DSR |
-| Saving towards a date | The monthly deposit that gets there on time | Savings Goal, Compound Interest |
-| Planning retirement | Whether current savings reach the life I want after work | Retirement, EPF, Compound Interest |
-| Taking stock | Where I stand, and whether my emergency cushion is big enough | Net Worth, Emergency Fund |
-
-> These are the situations the modules were designed around, not findings from user research. No research has been done, and the product collects no usage data by design.
-
-## 5. The proposed solution
-
-One page, thirteen calculators, one shared calculation library. Open it and it runs — no install, no sign-up, and no figure leaves the machine unless the reader presses a button.
-
-The modules are not thirteen separate tools bolted together. The DSR calculator runs gross salary through the PCB module's own statutory functions (`epfContribution`, `socsoContribution`, `eisContribution`, `calculatePcbTax`) to reach the net figure a bank divides by. The retirement calculator runs the compound-interest engine forward to the retirement date, then the drawdown engine from there. Because the modules share one library, their answers agree with each other.
-
-### 5.1 Product principles
-
-| Principle | What it means in the build |
-| --- | --- |
-| No calculate button | Every field is bound to one `renderAll()`. All thirteen modules recalculate on every keystroke, so no figure on screen can be out of date |
-| Malaysian rules first | Statutory tables, not percentages. Payroll figures are calibrated against payroll.my for YA 2026 to the sen |
-| Nothing leaves by default | The working store is the reader's own browser. The file and the Drive copy are opt-in, and Auto starts off |
-| State the assumptions | Every module carries a note on what it assumes and where it stops being reliable |
-| No surprises, and reversible | Import and From Drive replace rather than merge, say what is in both copies, and wait for the reader to agree |
-| No framework, no required build | Plain HTML, CSS and JavaScript. A double-clicked `index.html` is a working app; `build.js` is optional |
-| Secure by construction | Anything that came from storage or a file is built into the page as text, never as HTML, and a strict Content-Security-Policy backs that up |
-
-### 5.2 The reader's experience
-
-Every calculator is laid out the same way, so a reader who can use one can use all thirteen.
-
-- **A sticky input panel** on the left, and a results column on the right.
-- **Three result tiles.** The dark one is the headline figure, and the two beside it explain it.
-- **A distribution bar** showing what the total is made of. Where two bars appear (net worth, retirement, rent vs buy) they share one scale, so the gap between them is the point.
-- **Tables** that switch between yearly and monthly views.
-- **Blue assumption notes** stating what the module assumes and where it stops being reliable.
-- **Pill shortcuts** under a field, which fill that field rather than acting as separate inputs, and light up again when a typed value matches.
-- **Reset** on every panel, which restores that calculator's defaults and leaves the others alone.
-- **An empty state.** While the essential input is blank, the module shows a prompt instead of a wall of RM 0.00.
-- **One date format, DD-MM-YYYY, on every machine.** Dates are written out by the app rather than left to the browser's locale. A date that does not exist, such as 31-02-2026, is refused rather than quietly moved into March.
-- **A collapsible sidebar** that folds to an icon rail, with breakpoints at 1,180, 900 and 720 px and no horizontal overflow at 375 px.
-
-## 6. Scope A — the calculator catalogue
-
-Thirteen modules in four sidebar groups.
-
-| # | Module | Group | Answers | Headline output |
-| --- | --- | --- | --- | --- |
-| 1 | PCB Calculator | Tax | What lands in my account this month? | Net pay, every statutory deduction, and what the employer adds on top |
-| 2 | Income Tax | Tax | What do I owe for the year? | Tax band by band, 23 relief lines with their caps, effective vs marginal rate |
-| 3 | Home Loan | Loans | What does the bank want every month? | Instalment, total interest, what extra payments save in ringgit and in years |
-| 4 | Car Loan | Loans | What does a flat hire-purchase rate really cost? | The effective reducing rate, and early-settlement cost after the Rule of 78 |
-| 5 | Personal Loan | Loans | Flat or reducing, on the same rate? | Both instalments side by side, the true rate behind a flat quote, stamp duty and fees |
-| 6 | DSR Calculator | Loans | How much more will a bank lend me? | DSR and its band, the monthly room left, and what that room could borrow |
-| 7 | Savings Goal | Savings | What must I set aside to have it by then? | The monthly deposit, and what a smaller one costs in time |
-| 8 | EPF Calculator | Savings | What does my EPF grow into? | Akaun 1/2/3 split, and a yearly projection with a dividend set per year |
-| 9 | Compound Interest | Savings | What does regular investing turn into? | Final value, contributions, profit, and the month profit overtakes contributions |
-| 10 | Retirement | Savings | Am I on course for the life I want after work? | Fund needed, fund on track for, the gap, and three ways to close it |
-| 11 | Net Worth | Planning | Where do I actually stand? | Assets minus liabilities across 19 lines, and a debt-to-asset verdict |
-| 12 | Emergency Fund | Planning | How much should be standing by? | A target from essential spending, plus a recommended cover for that household |
-| 13 | Rent vs Buy | Planning | Which leaves me better off? | The winner and by how much, and the year buying pulls ahead |
-
-### 6.1 Module specifications
-
-What each module takes, what it gives back, how it works, and where it stops being reliable. `MODULES.md` in the repository goes into more depth.
-
-#### Module 1 — PCB Calculator
-
-| Item | Detail |
-| --- | --- |
-| Answers | What will actually land in my account this month? |
-| You enter | Basic salary; bonus or allowances this month; employee EPF rate (11 / 9 / 8%); employer EPF rate (13 / 12%); SOCSO category. |
-| You get | Net pay; every statutory deduction line by line; what the employee pays and what the employer adds on top; a bar showing where the gross went. |
-| How it works | EPF is charged on salary and bonus; SOCSO and EIS on salary only, both capped at a RM 6,000 wage. PCB uses LHDN's annualised method: annualise the salary, subtract the RM 9,000 individual relief and EPF relief (capped at RM 4,000), tax it through the brackets, divide by 12 and round up to 5 sen. A bonus is additional remuneration: tax the year including the bonus, subtract twelve regular MTDs, and deduct the difference in the month it is paid. |
-| Assumptions | Resident individual, YA 2026 brackets. Only the individual and EPF reliefs apply to PCB, matching payroll.my. Calibrated against payroll.my to the sen. |
-
-#### Module 2 — Income Tax Calculator
-
-| Item | Detail |
-| --- | --- |
-| Answers | What do I owe for the year, and which relief is actually worth claiming? |
-| You enter | Annual income, then any of the 23 LHDN relief lines in four groups, each with its own cap (Appendix A.2). |
-| You get | Chargeable income; tax band by band; the RM 400 rebate if it applies; effective vs marginal rate; what each relief line actually contributed after its cap. |
-| How it works | Each cap is enforced on its own, so claiming above a cap wastes the excess rather than spilling into another line. Relief types are `fixed`, `flag`, `count` (per child) and `amount` (capped spend). The rebate applies at chargeable income of RM 35,000 or less. |
-| Assumptions | Resident individual. Caps move with every Budget, so `RELIEF_GROUPS` is the single place to update them, and the panel builds itself from it. |
-
-#### Module 3 — Home Loan
-
-| Item | Detail |
-| --- | --- |
-| Answers | What does the bank ask for every month, and how much of it never touches the loan? |
-| You enter | Property price; deposit (ringgit or percent); rate; tenure; optionally an extra monthly payment and a one-off lump sum in a chosen year. |
-| You get | Instalment; total interest; total paid; what the extra payments save in ringgit and in years; the full amortisation schedule, yearly or monthly. |
-| How it works | `loanInstalment()` gives the payment: P·i·(1+i)ⁿ / ((1+i)ⁿ − 1). `loanSchedule()` applies extra payments to principal each month, so the schedule ends early and the saving is the difference between the two totals. |
-| Assumptions | Monthly rest, the basis a letter offer is quoted on. Housing loans are actually charged daily, which moves each month by a few ringgit but leaves the totals within rounding. Margin of finance capped at 90%, tenure at 50 years. |
-
-#### Module 4 — Car Loan
-
-| Item | Detail |
-| --- | --- |
-| Answers | Hire purchase is quoted flat. What does that instalment really cost? |
-| You enter | Car price; deposit; flat rate; tenure; a settlement point. |
-| You get | Instalment; term charges; the effective reducing rate (roughly double the flat rate); what settling early costs after the Rule of 78 rebate; the payment schedule. |
-| How it works | Interest = principal × flat rate × years, charged on the whole original amount for the whole term. `effectiveRate()` finds the reducing-balance rate that would demand the same instalment by bisecting 80 times, since there is no closed form. The rebate is charges × n(n+1) / N(N+1), where n is the number of months left. |
-| Assumptions | Fixed-rate hire purchase under the Hire-Purchase Act 1967. Tenure capped at 9 years, margin at 90%. |
-
-#### Module 5 — Personal Loan
-
-| Item | Detail |
-| --- | --- |
-| Answers | An unsecured loan quoted flat: what is the instalment, and what does the rate really mean? |
-| You enter | Amount; tenure (years or months); rate; a Flat / Reducing toggle; processing fees; a settlement month. |
-| You get | The instalment on both bases side by side; the effective rate behind a flat quote; total cost including 0.5% loan-agreement stamp duty and fees; early-settlement figures; the schedule. |
-| How it works | Flat reuses the hire-purchase maths and reducing uses the ordinary loan maths. The comparison runs both on the same rate so the gap is visible. The default is Flat, because that is how Malaysian banks quote. |
-| Assumptions | Tenure capped at 10 years. Rate guidance is given as ranges (banks 7–13% flat, public-sector schemes 3.5–5%), never as any named lender's rate. |
-
-#### Module 6 — DSR Calculator
-
-| Item | Detail |
-| --- | --- |
-| Answers | How much more will a bank actually lend me? |
-| You enter | Income (gross or net); fixed allowances; variable income and the share of it to count; employment type; the DSR cap to test; every existing commitment — home, car, personal, PTPTN, credit-card balance, other. |
-| You get | Net income the way a bank computes it; DSR and its band; net disposable income with a verdict; the monthly room left before the cap; what that room could borrow as a home, car or personal loan. |
-| How it works | Gross income is run through the PCB module's own statutory functions (EPF at 11%, SOCSO, EIS, PCB). Variable income is discounted (80% by default). A credit card counts at 5% of its balance. DSR = commitments ÷ net income. Room = net × cap − commitments, turned into a loan amount by `maxLoanReducing()` or `maxLoanFlat()`. |
-| Assumptions | Caps (private 60%, GLC 70%, government 80%) are typical ceilings, not rules. Banks apply their own income haircuts and stress rates, which are not modelled. |
-
-#### Module 7 — Savings Goal
-
-| Item | Detail |
-| --- | --- |
-| Answers | What does it take every month to have the money by the time I need it? |
-| You enter | Target; amount already saved; a deadline in months or as a date (either fills the other); expected return; optionally what I can actually spare. |
-| You get | The monthly deposit needed; where the final balance came from (head start, deposits, growth); if the deposit is smaller, how much later I arrive and how far short I am on the deadline. |
-| How it works | `goalDeposit()` solves the annuity in one step and rounds up to the sen, so a goal is never missed by rounding. `savingsSchedule()` trims the final deposit to hit the target exactly. `monthsToGoal()` handles a smaller deposit. |
-| Assumptions | Deposits land at month end, as a standing instruction does. The default return is 0% on purpose: for a fixed date, growth should be a bonus, not the plan. |
-
-#### Module 8 — EPF Calculator
-
-| Item | Detail |
-| --- | --- |
-| Answers | What goes in each month, and what does it grow into by the time I can touch it? |
-| You enter | Salary; employee and employer rates; voluntary top-up; current balance; age; the age to project to (default 55); annual salary growth; a dividend rate, which can be overridden year by year. |
-| You get | Monthly and yearly contributions; the Akaun 1 / 2 / 3 split (75 / 15 / 10); a year-by-year projection. |
-| How it works | `epfProjection()` credits the dividend once a year. The opening balance earns for twelve months, and each contribution only for the months after it lands, which averages 5.5/12 of a year across twelve equal contributions. Salary rises at each year end. |
-| Assumptions | EPF declares its rate each year without notice, so the table takes one rate per year. Conventional savings only — no Simpanan Shariah split. |
-
-#### Module 9 — Compound Interest
-
-| Item | Detail |
-| --- | --- |
-| Answers | What does regular investing turn into, and how much of that is mine versus the market's? |
-| You enter | Initial investment; monthly contribution; expected return; period; how often interest is credited (monthly, quarterly, yearly); inflation. |
-| You get | Final value; total contributed; profit; the month profit overtakes contributions; the balance in today's money; a lever table (RM 100 more a month, 1% better return, 5 more years, starting later); the yearly run. |
-| How it works | `compoundSchedule()` accrues interest monthly but only credits it when the rest closes, so money waiting for the credit date does not compound. This is how EPF and ASB weight a dividend. At monthly rests it matches the textbook annuity formula to the sen. |
-| Assumptions | Contributions at month end. At yearly rests this reads slightly higher than calculators that give within-year contributions no interest; the month-weighted Malaysian treatment is the more accurate one. |
-
-#### Module 10 — Retirement Calculator
-
-| Item | Detail |
-| --- | --- |
-| Answers | What does the life I want after work cost, and am I on course for it? |
-| You enter | Monthly income wanted in today's ringgit; other income then (pension, rental); age now and at retirement; how long the money must last; savings so far; monthly contribution; a return while working and a lower one after; inflation. |
-| You get | The fund needed on the day I retire; what I am on track for; the gap; how far my current path pays (for example "until age 74, 10 years short"); three ways to close it — save more, work longer, or want less. |
-| How it works | Accumulation with `compoundSchedule()`; the target from `drawdownFund()`, the present value of an inflation-rising withdrawal; the gap closed by `goalDeposit()`, a break-even age search in both directions, and `drawdownIncome()` deflated back to today. |
-| Assumptions | The post-retirement return is deliberately lower. Withdrawals rise with inflation monthly. Market sequence risk, EPF withdrawal rules and a lump sum at 55 are not modelled. |
-
-#### Module 11 — Net Worth
-
-| Item | Detail |
-| --- | --- |
-| Answers | Where do I actually stand? |
-| You enter | 19 lines in five groups — cash and bank, investments, property and vehicles against long-term and short-term debt — following AKPK's grouping. Optionally monthly spending, income and age. |
-| You get | Net worth; assets; liabilities; each line's share of its side; money reachable this week and how many months it covers; what is locked in EPF; debt-to-asset verdict; a par figure for age and income; every line sorted biggest first. |
-| How it works | The panel and its defaults are generated from `NET_WORTH_GROUPS` by `buildNetWorthUI()`. The asset and debt bars share one scale. The par figure is the rule of thumb age × annual income ÷ 10. |
-| Assumptions | Assets at what they would sell for today, debts at what they would cost to settle today. EPF counts in net worth but not in money reachable this week. |
-
-#### Module 12 — Emergency Fund
-
-| Item | Detail |
-| --- | --- |
-| Answers | How much should be standing by before a bad month turns into a bad year? |
-| You enter | Eight lines of essential monthly spending; months of cover wanted; three questions about the household; amount already set aside; monthly saving; what it earns. |
-| You get | The fund needed; what is still to find; months covered now; when I get there; what it takes to finish inside a year; a recommended cover with the reasons spelled out. |
-| How it works | Target = essential spending × months. Reuses `monthsToGoal()`, `goalDeposit()` and `savingsSchedule()`. The recommendation comes from `suggestedCover()` (Appendix A.8). |
-| Assumptions | Essential means what cannot stop being paid, not current spending. Money is assumed to be reachable the same day, which is why the default return is only 2.5%. |
-
-#### Module 13 — Rent vs Buy
-
-| Item | Detail |
-| --- | --- |
-| Answers | Over the years I would actually stay, which one leaves me better off? |
-| You enter | Rent and how fast it rises; price; deposit; loan rate and term; years of stay; property growth; upkeep; selling costs; the return on cash not sunk into a house. |
-| You get | The winner and by how much; what each path leaves; the year buying pulls ahead; a full cost breakdown of both sides; a year-by-year table. |
-| How it works | `rentVsBuy()` runs monthly and holds both sides to the same standard. The buyer's worth is value − outstanding loan − selling costs. The renter starts with the deposit and entry fees, and invests the difference between the buyer's outlay and the rent each month (or draws it down if rent is higher). Entry costs come from `buyingCosts()` (Appendix A.6). |
-| Assumptions | RPGT and first-home stamp duty exemptions are not modelled, and both are called out on screen. The renter is assumed to actually invest the difference. |
-
-### 6.2 The shared calculation library
-
-The first ~1,000 lines of `app.js` are pure functions with no DOM access. They fall into five groups:
-
-| Family | Functions | Notes |
-| --- | --- | --- |
-| Statutory | `epfContribution`, `socsoContribution`, `eisContribution`, `taxBands`, `calculateLhdnAnnualTax`, `calculatePcbTax`, `epfProjection` | Third Schedule bands; PERKESO closed form reproducing the published table; annualised MTD |
-| Loans | `loanInstalment`, `loanSchedule`, `hirePurchase`, `hirePurchaseSchedule`, `effectiveRate`, `ruleOf78Rebate`, `maxLoanReducing`, `maxLoanFlat`, `loanYearRows` | Monthly rest; flat-rate hire purchase; 80-step bisection for the effective rate |
-| Saving and growing | `savingsSchedule`, `goalDeposit`, `monthsToGoal`, `compoundSchedule`, `goalYearRows` | Deposits at month end; interest accrues monthly and is credited when the rest closes |
-| Spending down | `drawdownFund`, `drawdownIncome`, `drawdownSchedule` | Growing annuity; a fund that runs dry stops paying rather than going negative |
-| Property | `bandedFee`, `buyingCosts`, `rentVsBuy` | MOT tiers, loan-agreement duty, solicitors' scale, SST, disbursements |
-
-Rounding is deliberate throughout: `round2` to the sen, `ceilSen` up where a shortfall would matter, `roundUp5` up to 5 sen for the MTD rule, and `round5` to the nearest 5 sen for SOCSO.
-
-### 6.3 Rules every module follows
-
-| Rule | Why |
-| --- | --- |
-| Money in and out at month end | Matches a standing instruction, a salary deduction and a loan instalment |
-| Monthly rest on loans | The basis a letter offer is quoted on |
-| Rates are annual nominal, divided by 12 | Consistent everywhere, and what banks and funds quote |
-| Amounts wanted are in today's ringgit | The module applies inflation, so the reader never has to guess at future prices |
-| `round2` at every step of a schedule | Totals match rows a reader could add up by hand |
-| Round up where a shortfall would matter | `goalDeposit` and MTD both round up, so a target is never missed by a sen |
-| Records stay in the reader's browser | Nothing is sent anywhere unless the reader exports a file or pushes to their own Drive |
-
-## 7. Scope B — the save, scenario and sync layer
-
-FinSim started as thirteen calculators that remembered nothing. The persistence layer was added on 20 August 2026. The working store is always the browser. The file and the Drive copy are extra copies, and the app opens and calculates normally even if neither ever loads.
-
-| Feature | What it does | Setup needed |
-| --- | --- | --- |
-| Autosave | Writes the forms to the browser a quarter-second after typing stops, and restores them — including which calculator was open | No |
-| Scenarios | Named copies of one calculator's inputs, shown as chips under the panel heading. A chip lights up while the form matches it exactly | No |
-| Export / Import | One `finsim-YYYY-MM-DD.json` file, downloaded and read back | No |
-| To Drive / From Drive | The same file, kept as `finsim-data.json` in a folder in the reader's own Google Drive | Yes — one Google Cloud client ID |
-| Auto | Pushes to Drive about a minute after typing stops | Yes — and one manual push first |
-| Empty-browser prompt | On a browser with nothing on its forms, offers to bring the Drive copy down | Only if Drive is set up |
+The top \~1,000 lines of `app.js` are pure functions with no DOM access, and every module calls them rather than keeping its own copy of a rule. The DSR calculator runs gross salary through **the PCB module's own statutory stack** — `epfContribution`, `socsoContribution`, `eisContribution`, `calculatePcbTax` — to reach the net figure a bank divides by. The retirement calculator runs the compound-interest engine forward to the retirement date, then the drawdown engine from there. Rent vs Buy costs the purchase with the same `buyingCosts()` and runs the same `loanSchedule()` as the home loan.
 
 ```mermaid
-flowchart LR
-  F[Forms<br/>13 modules] -->|250 ms debounce| S[IndexedDB<br/>working store]
-  S -->|fallback| L[localStorage]
-  S -->|Export| E[Export file<br/>finsim-YYYY-MM-DD.json]
-  S -->|To Drive or Auto| D[Google Drive<br/>finsim-data.json]
-  E -->|Import, replaces| S
-  D -->|From Drive, replaces| S
+flowchart BT
+  L["Calculation library<br/>pure functions"] --> R["renderAll()"]
+  R --> T["Tax"]
+  R --> O["Loans"]
+  R --> S["Savings"]
+  R --> P["Planning"]
 ```
 
-### 7.1 Four design decisions
+Because the modules share one library, their answers agree with each other: the net pay on the PCB screen is, to the sen, the net pay the DSR screen divides by.
 
-1. **Snapshots are taken by walking the page, not from a list of fields.** Each `<section class="module">` is scanned for `input[id]`, `select[id]` and `.seg[id]`. That automatically picks up fields created at run time — the 23 relief lines, the 19 net-worth rows, the assumption boxes — so a new calculator is saved, backed up and ready for scenarios the day it lands, with nothing added to `save.js`. State kept outside the inputs goes in `captureExtras` / `applyExtras`.
-2. **Records moved from localStorage to IndexedDB.** Browsers cap localStorage at about 5 MB per origin, and `kaonhew02.github.io` is one origin shared with the author's other published apps. IndexedDB on the same origin was offered 3,034 MB. It is mirrored in memory so every existing synchronous read kept its shape. Writes never block and are coalesced per key.
-3. **Import and From Drive replace, never merge.** Merging would mean guessing which saved scenario is which, and a wrong guess leaves two copies of "Plan A" that disagree. Both show what is in each copy, with dates, and wait for the reader to agree.
-4. **Auto never opens a sign-in window.** If the Google session has lapsed, the push stands down and the stamp goes stale. A popup nobody asked for gets blocked, and one that is not blocked is worse. Auto also cannot make the first push itself.
+### No calculate button
 
-## 8. Technical architecture
+Every field is bound to a single `renderAll()`, which recalculates all thirteen modules on every keystroke. The hidden ones write to elements nobody is looking at, and the whole pass takes under a millisecond. **There is no such thing as a stale answer on screen**, because there is no moment at which an input has changed and a result has not.
 
-Seven runtime files, no dependencies, no backend. The only third-party code is an icon stylesheet and Google's sign-in library, both loaded from a CDN, and the calculators work without either.
+### Statutory tables, not percentages
 
-### 8.1 Source files
+Where a Malaysian authority publishes a table, FinSim reproduces the table. The payroll figures are calibrated against payroll.my for YA 2026 to the sen. Every figure a Budget can move is a named constant — `TAX_BRACKETS`, `RELIEF_GROUPS`, `SOCSO_CATEGORIES`, `EPF_ACCOUNTS`, `DSR_CAPS`, `MOT_STAMP_BANDS`, `LEGAL_FEE_BANDS` — so the annual refresh is an edit in one place rather than a hunt through the maths.
 
-| File | Lines | What lives there |
+### What the user gets that they did not have
+
+- **Answers that agree.** Thirteen calculators, one set of rules, one rounding policy.
+- **Privacy by construction.** Figures never leave the browser unless the reader presses a button. There is no account, no telemetry and no key in the source.
+- **Malaysian arithmetic that is actually right** — Third Schedule EPF, PERKESO tables, annualised MTD, flat-rate hire purchase with the Rule of 78, stamp duty and legal fees to the ringgit.
+- **Plans side by side.** Named scenarios per calculator — *35 years at 4%* against *30 years at 4.2%*, one tap apart.
+- **The assumptions, out loud.** Every module carries a note saying what it assumes and where it stops being reliable.
+- **A folder you can copy.** No framework and no required build, so a double-clicked `index.html` is a working app.
+
+## Objectives and success criteria
+
+The project succeeds if a Malaysian can answer the thirteen questions on the sidebar with figures that match the statute, keep their plans for a year, and never hand a figure to a server. Everything below is a test, not an aspiration.
+
+| # | Objective | Measure | Threshold | Status |
+| --- | --- | --- | --- | --- |
+| O1 | Statutory figures match the published tables | Payroll figures against payroll.my for YA 2026 | Exact to the sen | Met |
+| O2 | The modules agree with each other | Net pay in DSR against the PCB module on the same salary | Identical | Met |
+| O3 | No answer on screen is ever stale | Calculate buttons; results lagging an edited input | 0 | Met |
+| O4 | The app runs with nothing installed | Framework, npm packages, build steps or API keys needed to run | 0 of each | Met |
+| O5 | Nothing leaves the browser by default | Requests carrying a figure with Auto off and no button pressed | 0 | Met |
+| O6 | Every module states its assumptions | Modules with an assumptions note on screen | 13 of 13 | Met |
+| O7 | Plans survive a new laptop | Export → Import round trip restoring every form and scenario | Identical | Met |
+| O8 | A failed write is never silent | Failed writes reported as saved | 0 | Met |
+| O9 | Storage headroom | Usable capacity for records | ≥ 500 MB | Met (\~3,034 MB via IndexedDB) |
+| O10 | Usable on a phone | Horizontal overflow at 375 px, any module | 0 px | Met |
+| O11 | A backup file cannot run code | Script payloads executed from a crafted Import or Drive file | 0 | Met (22 Sep 2026) |
+| O12 | Regressions are caught before release | Modules covered by committed tests that run on every push | 13 of 13 | **Not met** — 0 committed |
+| O13 | Text is readable | WCAG AA contrast on every piece of text | ≥ 4.5:1 | Partial — quiet text at 2.63:1 |
+| O14 | Opens with the network off | Installs to a home screen and starts offline | Yes | Not met |
+| O15 | Rules follow the year of assessment | Constants for the year the reader's income falls in | Correct YA | Partial — YA 2026 only |
+
+### What "done" means for Phase 4
+
+O12 to O15 are the four open rows, and they are the whole of the proposed next phase. O12 is the one that protects every other row: without committed tests, each of O1–O11 is true today and unguarded tomorrow. O15 is the one a calendar forces — on 1 January 2027 every payslip is taxed under YA 2027 rules, and a calculator that only knows YA 2026 is wrong without having changed.
+
+### Explicit non-objectives
+
+These are refused on purpose, and each refusal has a reason that should survive a change of mind:
+
+- **No accounts and no server.** Holding a reader's salary on a server is the thing the product exists to refuse.
+- **No product recommendations and no bank rates quoted as fact.** Rate guidance is given as ranges, never as a named lender's offer. FinSim is a planning tool, not financial advice.
+- **No invented figures.** EPF's next dividend is not predicted — the reader sets one per year. A bank's income haircut is not guessed. A number the app made up would sit on screen looking like a fact.
+- **No filing.** FinSim works out what is owed; it does not submit anything to LHDN, and it never asks for a tax number.
+- **No analytics.** Success is deliberately invisible, because measuring it would mean sending something from the reader's browser.
+
+## Target users and personas
+
+The target user is one Malaysian adult working out their own money — salaried, resident for tax, paying into EPF, and facing one of the big decisions: a first home, a car, the annual return, or whether retirement adds up. Not an adviser, not a payroll department, and not somebody who needs a binding figure.
+
+| Persona | Situation | What they need | Lives in |
+| --- | --- | --- | --- |
+| **Nurul, 24 — the first payslip** | First job, RM 3,800 basic, and a net figure that is not what she expected | Every deduction explained, and what her employer pays on top | M1, M8 |
+| **Jason, 29 — the first home** | Renting at RM 1,600, looking at a RM 450,000 condominium | The instalment, the entry costs to the ringgit, whether the bank will lend, and whether buying beats renting | M3, M6, M13 |
+| **Priya, 33 — the car upgrade** | Quoted a flat rate over nine years on a new car, with a personal loan already running | The real rate behind the quote, and what settling early would actually save | M4, M5, M6 |
+| **Wei Ling, 36 — the tax filer** | Files the BE form every April; spends on lifestyle, SSPN and her parents' medical bills | Which reliefs are worth chasing and which are already capped | M2 |
+| **Faizal, 44 — the retirement check** | EPF, an ASB account and a goal of RM 5,000 a month from 60 | The fund needed, what he is on track for, and the cheapest way to close the gap | M8, M9, M10 |
+
+One person is usually several of these over a decade, which is why they are one app and not five.
+
+### Jobs to be done
+
+- *When my payslip arrives, I want every deduction explained, so that I can tell whether my employer got it right.*
+- *When a bank quotes me a flat rate, I want the real rate beside it, so that I can compare loans on the same footing.*
+- *When I am deciding whether to buy, I want both paths costed to the stamp duty, so that the answer is not just an argument for buying.*
+- *When I file my return, I want to see which relief is worth chasing, so that I do not spend to claim a relief I have already capped.*
+- *When I change laptop, I want my figures and saved plans back, so that a year of planning is not retyped.*
+
+### Who this is not for
+
+Advisers and institutions needing a record of advice; payroll departments running many employees; non-residents and anyone under a non-Malaysian tax regime; and anyone needing a binding figure — for that, the app directs the reader to KWSP, LHDN or the bank itself.
+
+## Scope — module breakdown
+
+Thirteen modules in four sidebar groups, all delivered and live. Every one takes the same shape: a sticky input panel on the left, three result tiles and a distribution bar on the right, then tables that flip between yearly and monthly.
+
+| # | Group | Module | Answers | Status |
+| --- | --- | --- | --- | --- |
+| M1 | Tax | PCB Calculator | What lands in my account this month? | Delivered |
+| M2 | Tax | Income Tax Calculator | What do I owe for the year? | Delivered |
+| M3 | Loans | Home Loan | What does the bank want every month? | Delivered |
+| M4 | Loans | Car Loan | What does a flat hire-purchase rate really cost? | Delivered |
+| M5 | Loans | Personal Loan | Flat or reducing, on the same rate? | Delivered |
+| M6 | Loans | DSR Calculator | How much more will a bank lend me? | Delivered |
+| M7 | Savings | Savings Goal | What must I set aside to have it by then? | Delivered |
+| M8 | Savings | EPF Calculator | What does my EPF grow into? | Delivered |
+| M9 | Savings | Compound Interest | What does regular investing turn into? | Delivered |
+| M10 | Savings | Retirement Calculator | Am I on course for the life I want after work? | Delivered |
+| M11 | Planning | Net Worth | Where do I actually stand? | Delivered |
+| M12 | Planning | Emergency Fund | How much should be standing by? | Delivered |
+| M13 | Planning | Rent vs Buy | Which leaves me better off? | Delivered |
+
+### M1 · Tax — PCB Calculator
+
+What actually lands in the account this month, and what the employer pays on top.
+
+- Basic salary, bonus or allowances this month, employee EPF at 11 / 9 / 8%, employer EPF at 13 / 12%, and the SOCSO category.
+- EPF is charged on salary **and** bonus; SOCSO and EIS on salary only, both capped at a RM 6,000 wage.
+- **PCB uses LHDN's annualised method.** Annualise the salary, subtract the RM 9,000 individual relief and EPF relief capped at RM 4,000, tax it through the brackets, divide by 12 and round **up** to 5 sen.
+- **A bonus is additional remuneration.** Tax the whole year including the bonus, subtract twelve regular MTDs, and deduct the difference in full in the month the bonus is paid.
+- Only the individual and EPF reliefs apply to PCB, matching payroll.my — and the figures are calibrated against it to the sen.
+
+### M2 · Tax — Income Tax Calculator
+
+What is owed for the year, and which relief is actually worth claiming.
+
+- Annual income, then any of **23 LHDN relief lines in four groups**, each with its own cap. The panel builds itself from `RELIEF_GROUPS`, so a Budget change is an edit to one table.
+- Four relief types: `fixed` (granted automatically), `flag` (you qualify or you do not), `count` (per child) and `amount` (what you spent, capped).
+- **Each cap is enforced on its own.** Claiming above a cap wastes the excess rather than spilling into another line, and the breakdown shows what each line actually contributed.
+- Chargeable income band by band, the RM 400 rebate at RM 35,000 or less, and effective against marginal rate.
+
+### M3 · Loans — Home Loan
+
+What the bank asks for every month, and how much of it never touches the loan.
+
+- Price, deposit in ringgit **or** percent (whichever was touched last leads), rate, tenure, and optionally an extra monthly payment and a one-off lump sum in a chosen year.
+- `loanInstalment()` for the payment; `loanSchedule()` applies extra payments to principal, so the schedule simply ends early and the saving is shown in ringgit **and** in years.
+- **Monthly rest**, the basis a letter offer is quoted on. Housing loans are charged daily, which moves each month by a few ringgit and leaves the totals within rounding.
+- Margin of finance capped at 90%, tenure at 50 years. Full amortisation, yearly or monthly.
+
+### M4 · Loans — Car Loan
+
+Hire purchase is quoted flat. What does that instalment really cost?
+
+- **Interest is charged on the whole original amount for the whole term** — principal × flat rate × years — regardless of how much has been repaid.
+- `effectiveRate()` finds the reducing-balance rate that would demand the same instalment. There is no closed form, so it bisects 80 times — and it comes out near double the quote.
+- **Early settlement uses the Rule of 78:** charges × n(n+1) / N(N+1), where n is the months left. Interest is treated as earned fastest at the start.
+- Fixed-rate hire purchase under the Hire-Purchase Act 1967. Tenure capped at 9 years, margin at 90%.
+
+### M5 · Loans — Personal Loan
+
+An unsecured loan quoted flat: what is the instalment, and what does the rate really mean?
+
+- Amount, tenure in years **or** months, rate, a Flat / Reducing toggle, processing fees and a settlement month.
+- Both bases side by side on the same rate, so the gap is visible; the default is Flat, because that is how Malaysian banks quote.
+- Total cost includes the **0.5% loan-agreement stamp duty** and fees.
+- Tenure capped at 10 years. Rate guidance is written as ranges — banks 7–13% flat, public-sector schemes 3.5–5% — never as a named lender's rate.
+
+### M6 · Loans — DSR Calculator
+
+The module that ties the app together: how much more will a bank actually lend?
+
+- **Gross income runs through the PCB module's own statutory stack** — EPF at 11%, SOCSO, EIS, PCB — to reach the net figure banks divide by.
+- Fixed allowances in full; variable income discounted by a chosen share, 80% by default.
+- Every commitment a bank can see on CCRIS: home, car, personal, PTPTN, other — and a credit card **counted at 5% of its balance** whatever the bank's own minimum is.
+- DSR placed in a band from *Comfortable* to *Over-extended*; net disposable income with a verdict; the monthly room before the cap, turned into a borrowable home, car or personal loan by `maxLoanReducing()` and `maxLoanFlat()`.
+- Caps — private 60%, GLC 70%, government 80% — are typical ceilings, not rules. A civil servant repaying through BPA gets the highest because the instalment is taken before the pay arrives.
+
+### M7 · Savings — Savings Goal
+
+What it takes every month to have the money by the time it is needed.
+
+- Target, what is already saved, a deadline in months **or** as a date (either fills the other), expected return, and optionally *what I can actually spare*.
+- `goalDeposit()` solves the annuity in one step and **rounds up to the sen**, so a goal is never missed by rounding; the final deposit is trimmed so the target is hit exactly.
+- A smaller deposit shows how much later the goal arrives and how far short the deadline falls.
+- The default return is 0% on purpose: for a fixed date, growth should be a bonus, not the plan.
+
+### M8 · Savings — EPF Calculator
+
+What goes in each month, and what it grows into by the time it can be touched.
+
+- Salary, both rates, voluntary top-up, current balance, age, the age to project to (55 by default) and salary growth.
+- The Akaun 1 / 2 / 3 split at **75 / 15 / 10**, the restructure of May 2024.
+- **A dividend rate per year.** EPF declares its rate once a year and never in advance, so the projection table takes one rate for each year rather than holding a single figure flat.
+- Dividends credited on the balance held through the year: the opening balance earns twelve months, each contribution only the months after it lands — 5.5/12 of a year across twelve equal contributions, the aggregate EPF itself works to.
+
+### M9 · Savings — Compound Interest
+
+What regular investing turns into, and how much of it is the reader's money versus the market's.
+
+- Initial sum, monthly contribution, expected return, period, crediting frequency (monthly, quarterly, yearly) and inflation.
+- **Interest accrues monthly but is only credited when the rest closes**, so money waiting for the credit date does not compound — exactly how EPF and ASB weight a dividend by the months held.
+- Final value, contributions, profit, the month profit overtakes contributions, the balance in today's money, and a lever table: RM 100 more a month, 1% better, five more years, starting later.
+- At monthly rests it matches the textbook annuity formula to the sen.
+
+### M10 · Savings — Retirement Calculator
+
+What the life wanted after work costs, and whether the current path reaches it.
+
+- Income wanted **in today's ringgit**, other income then, age now and at retirement, how long the money must last, savings so far, monthly contribution, a return while working and a **lower** one after, and inflation.
+- Two phases back to back: `compoundSchedule()` to the retirement date, then `drawdownFund()` — the present value of an inflation-rising withdrawal — for the fund needed.
+- The gap closes three ways: save more (`goalDeposit()`), work longer (a break-even age searched in both directions), or want less (`drawdownIncome()` deflated back to today).
+- Says how far the current path actually pays — *until age 74, 10 years short* — rather than only how big the gap is.
+
+### M11 · Planning — Net Worth
+
+Where the reader actually stands.
+
+- **19 lines in five groups** — cash and bank, investments, property and vehicles against long-term and short-term debt — following AKPK's own grouping. The panel and its defaults are generated from `NET_WORTH_GROUPS`.
+- Net worth, each line's share of its side, money reachable this week and how many months it covers, what is locked in EPF, and a debt-to-asset verdict.
+- The asset and debt bars **share one scale**, so the gap between them is the picture.
+- EPF counts in net worth but not in money reachable this week — it is real, it is just not available until 55.
+
+### M12 · Planning — Emergency Fund
+
+How much should be standing by before a bad month turns into a bad year.
+
+- Eight lines of **essential** monthly spending — what cannot stop being paid, not current spending.
+- A recommended cover from three questions about the household: three months to start, +2 for contract work, +3 for an own business, +1 for one income, +1 or +2 for dependants, capped at 12 — with the reasons read back as a sentence.
+- Reuses the savings-goal helpers for the arrival date and the twelve-month pace.
+- The default return is only 2.5%, because the money must be reachable the same day — an emergency fund is insurance you happen to own, not an investment.
+
+### M13 · Planning — Rent vs Buy
+
+Over the years the reader would actually stay, which leaves them better off?
+
+- **Both sides are held to the same standard.** The buyer's worth is value − outstanding loan − selling costs. The renter starts with the deposit **and** the entry fees the buyer spent, and invests the difference between the buyer's outlay and the rent each month — or draws it down when rent is higher.
+- Entry costs are the real ones from `buyingCosts()`. On a RM 500,000 place with a RM 450,000 loan: MOT stamp duty RM 9,000, loan-agreement duty RM 2,250, legal fees RM 14,825 including SST and disbursements.
+- The winner and by how much, the year buying pulls ahead, and a year-by-year table of what each path would walk away with.
+- RPGT and first-home stamp duty exemptions are not modelled, and both are called out in the panel hints.
+
+### Out of scope
+
+| Excluded | Why |
+| --- | --- |
+| RPGT on property sales | 30% of the gain inside three years, tapering to nil from the sixth — it turns on facts the app does not ask for |
+| First-home stamp duty exemptions | They move with every Budget and turn on eligibility the app cannot verify |
+| Daily-rest loan interest | Monthly rest is what the letter offer quotes; the totals differ by rounding |
+| Market sequence risk | A long projection is a direction, and one average return says so more honestly than an invented distribution |
+| Tax on investment returns | Out of scope for a planning figure stated in today's ringgit |
+| A bank's internal credit scoring | Banks apply their own haircuts and stress rates; the DSR caps are typical ceilings |
+| Simpanan Shariah EPF, withdrawals and the age-55 lump sum | Conventional savings only; not modelled in the retirement projection |
+| Accounts, sync servers, multiple currencies, other tax regimes | Different product, different user |
+
+## System architecture
+
+FinSim is a static site with no backend: seven files served by GitHub Pages, a storage layer in the browser, and an optional push to the reader's own Google Drive. Nothing runs on a server, so there is nothing to pay for, nothing to patch and nothing to breach.
+
+```mermaid
+flowchart TD
+  P["index.html under CSP"] --> S["store.js"]
+  P --> A["app.js"]
+  P --> V["save.js"]
+  P --> D["drive.js"]
+  S --> IDB[("IndexedDB")]
+  S -.-> LS[("localStorage")]
+  D --> GD[("Google Drive")]
+```
+
+### How the stack got here
+
+The storage layer changed twice in one day, and the security posture once, a month later. The reasoning matters more than the outcome:
+
+| Route | What it was | Why it changed |
 | --- | --- | --- |
+| **A** — A stateless page (17 Aug) | Thirteen calculators and nothing remembered | A reload wiped an evening's figures, and a plan that cannot be kept is not a plan |
+| **B** — `localStorage` (20 Aug) | Autosave, scenarios, Export/Import and the Drive copy | `kaonhew02.github.io` is **one origin for every repository**, so FinSim and MoneyFlow were sharing a single \~5 MB bucket |
+| **C** — IndexedDB, mirrored in memory (20 Aug) | Where it is now | The same origin was offered \~3,034 MB, and every synchronous read kept its shape |
+| **D** — Hardened (22 Sep) | Content-Security-Policy, validated imports, SRI, a licence and an optional build | A crafted scenario id in an imported file ran script on every reload |
+
+### Files
+
+| File | Lines | Holds |
+| --- | --- | --- |
+| `app.js` | 3,934 | The calculation library, one `renderX()` per module, the wiring and the date handling |
 | `index.html` | 3,483 | The sidebar, one `<section class="module">` per calculator, and the Content-Security-Policy |
-| `app.js` | 3,934 | The calculation library, then one `renderX()` per module, then the wiring and the date handling |
 | `style.css` | 1,645 | Design tokens, components, responsive rules last |
-| `save.js` | 1,087 | Autosave, scenarios, export/import, the data panel, and the validation of every record and imported file |
-| `drive.js` | 543 | The optional Google Drive copy and the Auto switch |
-| `store.js` | 321 | The IndexedDB adapter, mirrored in memory, falling back to localStorage |
-| `drive-config.js` | 44 | OAuth client ID, folder ID and filename — all safe to publish |
-| `build.js` | 164 | Optional. Minifies into `dist/` and stamps each file with a content hash (Section 10) |
+| `save.js` | 1,087 | Autosave, scenarios, Export/Import, the data panel, and the validation of every record and imported file |
+| `drive.js` | 543 | OAuth, push, pull and the Auto switch |
+| `store.js` | 321 | `FSStore` — IndexedDB mirrored in memory, with a `localStorage` fallback |
+| `build.js` | 164 | Optional. Minifies into `dist/` and stamps every file with a hash of its contents |
+| `drive-config.js` | 44 | Client ID, folder ID and filename — no secret, safe to publish |
 
-### 8.2 The render loop
+The app runs from any static host, or from a double-clicked `index.html`. There is no `package.json` in the live build, no bundler and no API key. Exactly two assets come from elsewhere — the Bootstrap Icons stylesheet, and Google's Identity Services client, which is only needed for Drive sign-in. Neither is load-bearing: the calculators run without both.
 
-On `DOMContentLoaded` the app binds `input` and `change` on every field inside a `.panel` to a single `renderAll()`, which calls all thirteen `renderX()` functions. Hidden modules write to elements nobody is looking at, and the whole pass takes under a millisecond. As a result, nothing on screen can ever be out of date.
+### The render loop
+
+On `DOMContentLoaded` the app binds `input` and `change` on every field inside a `.panel` to one `renderAll()`, which calls the thirteen `renderX()` functions in turn. Each reads its inputs with `num()` and `segValue()`, calls the library, and writes text into result elements by id with `set()`. While the essential input is blank the module keeps an `is-empty` class and shows a prompt instead of a wall of `RM 0.00`.
+
+The persistence layers are optional to the calculators by design: `store.js` loads first, `save.js` and `drive.js` after `app.js`, and if all three failed to load FinSim would still open and still calculate — which is the property to keep if any of them is ever rewritten.
+
+### The module contract
+
+A module is a nav button carrying `data-module`, a `<section class="module">` split into a panel and a results column, pure functions in the library, a `renderX()`, and entries in `renderAll()`, `MODULES` (title and subtitle) and `FORM_DEFAULTS` (what Reset restores). **Nothing has to be added to `save.js`** — snapshots are taken by walking the section's own fields, so a new calculator is saved, backed up and scenario-ready the day it lands. State kept outside the inputs — which box of a ringgit/percent pair leads, the EPF per-year rates — goes in `captureExtras` / `applyExtras`. Where a panel is a long list of money lines, it is generated from an array the way `buildNetWorthUI()` builds the net-worth panel.
+
+### Deployment and cache busting
+
+The live site is served from the `main` branch root of the public repository `KaonHew02/FinSim`. Every script and the stylesheet carry a `?v=` query — currently `v=14`. **Bumping it on every change is mandatory**: Pages sends a long cache life, and a phone will otherwise keep yesterday's `app.js` for days — a bug that cannot be reproduced on the machine it was fixed on.
+
+`node build.js` removes that manual step for anyone who uses it: it writes `dist/` with the JavaScript minified (261.6 KB becomes 118.4 KB, 55% smaller) and every local file stamped with a hash of its own bytes, and it refuses to finish if the Content-Security-Policy is missing or a hand-written `?v=` survives. `dist/` is ignored by git. Whether Pages should serve `dist/` from a separate public repository is an open decision, set out in [Security and privacy](#security-and-privacy).
+
+## Data model and storage design
+
+Two record stores, both versioned, both backed up. FinSim stores **what the reader typed and nothing it worked out**.
+
+| Key | Written by | Holds |
+| --- | --- | --- |
+| `finsim.inputs.v1` | Autosave | Every calculator's fields, a quarter-second after typing stops, plus which calculator was open |
+| `finsim.scenarios.v1` | Scenario **Save** | Named copies of one calculator's inputs, filed under that calculator |
+
+Besides those, four small keys stay in `localStorage`, deliberately outside the backup: `finsim.saved` (the *Saved 20:02* stamp), `finsim.drive.lastPush`, `finsim.drive.auto` and `finsim.store.persistAsked`. They are wanted before the first paint, and none is a figure anybody would want back out of a backup.
+
+### Inputs are stored; answers never are
+
+Every figure on screen is recomputed from the inputs at paint time. Nothing derived is written down, so there is never a second version of the truth to disagree with the first. The consequence is worth stating plainly: **when the rules change, every saved plan's answer changes with them** the next time it is opened. That is correct for a plan about this year and wrong for a plan saved to remember last year — which is why Phase 4 keys the rules by year of assessment rather than overwriting them.
+
+Rounding is deliberate throughout: `round2` to the sen at every step of a schedule, so totals match rows a reader could add by hand; `ceilSen` **up** wherever rounding down would miss a target; `roundUp5` for the MTD rule; `round5` to the nearest 5 sen for SOCSO. Dates are written DD-MM-YYYY by the app itself rather than left to the browser's locale, and a date that does not exist — `31-02-2026` — is refused rather than quietly rolled into March.
+
+### Record shapes
 
 ```
-renderAll()  →  renderPcb() · renderEpf() · renderIncomeTax() · renderLoan()
-                renderCar() · renderPersonal() · renderDsr() · renderGoal()
-                renderCompound() · renderRetirement() · renderNetWorth()
-                renderFund() · renderRentBuy()
+snapshot = { f: { fieldId: value }, c: { checkboxId: bool },
+             s: { segmentId: value }, x?: extras }
+
+inputs   = { v: 1, savedAt, active: moduleId,
+             modules: { moduleId: snapshot } }
+
+scenario = { id, module, name, savedAt, snap: snapshot }
+
+extras   = downBy | settleBy | tenureBy | timeBy | EPF rates[year]
 ```
 
-### 8.3 Adding a module
+Loading a snapshot **resets the module to its defaults first**. A snapshot is a complete picture of that calculator, so anything it does not mention must go back to blank — otherwise loading *Plan B* over *Plan A* leaves Plan A's extra payment in the form, and the answer on screen belongs to neither.
 
-1. **Sidebar** — a `<button class="nav-item" data-module="x-module">` in the right group.
-2. **Section** — `<section id="x-module" class="module">` with the standard panel and results shape, an empty-state note and a results body.
-3. **Maths** — pure functions alongside the other model code, with no DOM access.
-4. **`renderX()`** — read inputs with `num()` / `segValue()`, write results with `set()`, toggle `is-empty` on the essential input.
-5. **Register it** — add to `renderAll()`, `MODULES` (title and subtitle) and `FORM_DEFAULTS` (what Reset restores).
-6. **Segments** — if a pill row feeds a field, add the one-line hook to the `.seg` click handler.
+### Export, import and replace
 
-Nothing has to be added to `save.js`. Where the panel is a long list of money lines, it is generated from an array, the way `buildNetWorthUI()` builds the net-worth panel from `NET_WORTH_GROUPS`.
+Export writes both stores into one dated envelope:
 
-### 8.4 Where the rules live
-
-Every figure that a Budget can change is a named constant, so the annual refresh means editing one place rather than hunting through the maths.
-
-| When this changes | Edit |
-| --- | --- |
-| Tax brackets or the rebate | `TAX_BRACKETS`, `REBATE_CEILING`, `REBATE_AMOUNT` |
-| A relief cap, or a new relief | `RELIEF_GROUPS` — the panel builds itself from it |
-| SOCSO categories or the ceiling | `SOCSO_CATEGORIES`, `socsoBaseEmployer` |
-| EPF account split | `EPF_ACCOUNTS` |
-| DSR caps and bands | `DSR_CAPS`, `DSR_BANDS`, `CARD_MIN_RATE` |
-| Stamp duty and legal fee scales | `MOT_STAMP_BANDS`, `LEGAL_FEE_BANDS`, `LOAN_STAMP_RATE`, `LEGAL_SST`, `LEGAL_EXTRAS` |
-| Loan limits | `LOAN_MAX_YEARS`, `LOAN_MAX_MARGIN`, `CAR_MAX_YEARS`, `CAR_MAX_MARGIN`, `PERSONAL_MAX_MONTHS` |
-| Net worth or emergency fund lines | `NET_WORTH_GROUPS`, `EF_ITEMS` |
-| Colours, spacing, the collapsed rail | Design tokens at the top of `style.css`, then `.app.is-rail` |
-
-### 8.5 The backup file
-
-One format, reachable three ways. A file made by Export can be dropped into the Drive folder by hand, and a file pulled off Drive can be fed to Import.
-
-```json
-{
-  "format": "finsim.backup",
-  "version": 1,
-  "app": "FinSim",
-  "savedAt": "2026-08-24T09:17:00.000Z",
-  "stores": {
-    "finsim.inputs.v1": "…",
-    "finsim.scenarios.v1": "…"
-  }
-}
+```
+finsim-YYYY-MM-DD.json
+{ format: 'finsim.backup', version: 1, app: 'FinSim', savedAt, stores: { ...BACKUP_STORES } }
 ```
 
-A store that is not listed in `BACKUP_STORES` is silently not backed up — the kind of bug nobody notices until a restore. Adding a store is a two-line change in `save.js` and `store.js` together. Since 22 September every imported file is rebuilt through `cleanEnvelope` / `cleanStores` before anything is written (Section 9.2).
+**Import replaces; it never merges.** Merging means guessing which saved scenario is which, and a wrong guess leaves two copies of *Plan A* that disagree. So it states what is in the file and what is in the browser, with dates, and waits for agreement.
 
-### 8.6 Hosting and identity
+**Every imported file is rebuilt, not trusted.** `cleanEnvelope` and `cleanStores` read the file into a freshly built envelope at a single choke point; `validScenario` and `cleanSnapshot` check every record's shape; ids must match `[A-Za-z0-9_-]{1,64}`; names are capped at 40 characters; a module that does not exist is dropped; snapshots are reduced to plain values; and a file over 8 MB is refused. Drive pulls come through the same door.
 
-GitHub Pages serves the static files from `KaonHew02/FinSim`. Google Drive needs a real origin, so the registered one is `https://kaonhew02.github.io`. A double-clicked `index.html` keeps working for the calculators and for Export/Import, but never for Drive, because Google will not issue a token to a `file://` page, which has no origin. The OAuth scope is `drive.file`, which reaches only files the app itself created — it cannot read other documents or list the Drive. That scope is not classed as sensitive, so it needs no verification review from Google.
+### Snapshots by walking the page
 
-## 9. Security and privacy
+Each `<section class="module">` is scanned for `input[id]`, `select[id]` and `.seg[id]`. That picks up fields built at run time — the 23 relief lines, the 19 net-worth rows, the assumption boxes beside the results — without `save.js` keeping a list of them that falls behind the day a field is added. A store that is not in `BACKUP_STORES` is silently not backed up, so adding one is a two-line change in `save.js` and `store.js` together.
 
-### 9.1 Privacy model
+### The Google Drive copy
 
-- **No account and no sign-up.** The calculators need nothing from the reader but their figures.
-- **No analytics, telemetry or error reporting.** No third-party request carries a figure.
-- **The working store is the reader's browser.** IndexedDB, with localStorage as fallback.
-- **The only outbound request is to Google Drive**, and only when the reader presses To Drive or From Drive, or has switched Auto on. Auto ships switched off.
-- **The Drive scope is `drive.file`.** The app can see only the file it wrote, in a folder the reader controls. `docs/DRIVE.md` opens by telling the reader to keep that folder Restricted.
-- **The OAuth client ID is not a secret** and is meant to be published. A client secret must never appear in `drive-config.js`, and the web flow the app uses does not need one.
-- **Referrer policy `strict-origin-when-cross-origin`.** Only the origin is ever sent, never the path.
+An optional second copy in the reader's own Drive folder, scoped to `drive.file` — which reaches only files the app itself created, needs no Google verification review, and keeps a client ID published on GitHub from being a key to anything. It must never be widened to `drive`.
 
-### 9.2 Security hardening, 22 September 2026
+- **Auto-push is opt-in and off by default**, sent about a minute after typing stops, so an evening at a calculator is one upload.
+- **It never opens a sign-in window.** A popup nobody asked for gets blocked, and one that is not blocked is worse. If the token cannot be renewed silently it stands down and the stamp goes stale. It cannot make the first push itself.
+- **Coming back to an empty browser**, the app offers to bring the Drive copy down rather than doing it, and shows what is in both copies first.
+- **The browser is asked to keep the records.** `navigator.storage.persist()` is requested once, and only once there is something worth keeping.
 
-**The defect.** A scenario's `id` was inserted into the chip's `data-id="…"` attribute by string concatenation, while the `name` beside it was escaped. `backupApply` also wrote an imported file's stores verbatim after checking a single string that anyone can type. An id such as `x"><img src=x onerror=…>` in an imported or Drive file therefore broke out of the attribute and ran without a click. Because the payload stayed in storage, it ran again on every reload. On a shared `github.io` origin it could reach every project published under the account, not just FinSim. It was confirmed executing in a browser before the fix.
+### The statutory tables as built
 
-| Control | What it does |
-| --- | --- |
-| Chips built as DOM nodes | Chips are built with `textContent` and `dataset`, never HTML strings, so there is no longer a line of code that could get the escaping wrong |
-| Record validation | `validScenario` / `cleanSnapshot` check every record: ids must match `[A-Za-z0-9_-]{1,64}`, names are capped at 40 characters, the module must exist, and snapshots are reduced to plain values. Nothing legitimate is refused |
-| A single entry point for imports | `cleanStores` / `cleanEnvelope` rebuild every imported file from scratch. Drive pulls go through the same code, and both dialogs describe what will actually be written |
-| Size ceiling | An imported file is refused above 8 MB |
-| Prototype pollution | Blocked on the import path |
-| Content-Security-Policy | A strict `script-src`, with `object-src 'none'` and `base-uri` / `form-action 'self'` (Section 9.3) |
-| No inline handlers | 13 inline `onsubmit` handlers moved into JavaScript, which is what makes the strict `script-src` possible |
-| Subresource Integrity | A SHA-384 hash on the jsDelivr icon stylesheet, pinned to bootstrap-icons 1.11.3. If the CDN ever serves anything else, the browser drops it |
+These are the figures in the build on 23 September 2026 — YA 2026, resident individual — and exactly what Phase 4 keys by year.
 
-**Verified:** the original attack was inert even with the payload still in storage; hostile names rendered as text; imports were filtered; prototype pollution was blocked; all 13 calculators gave correct results; and there were no console errors in either the source or the built copy.
-
-### 9.3 Content-Security-Policy
-
-| Directive | Value | Why |
-| --- | --- | --- |
-| `default-src` | `'self'` | Anything not named below comes only from the site itself |
-| `script-src` | `'self'` accounts.google.com | Only the app's own files and Google's sign-in library run. No inline script |
-| `style-src` | `'self'` `'unsafe-inline'` cdn.jsdelivr.net accounts.google.com | Google's sign-in library injects its own `<style>` block |
-| `font-src` | `'self'` cdn.jsdelivr.net | The icon font |
-| `img-src` | `'self'` data: *.googleusercontent.com | The logo, inline images, and the signed-in Google avatar |
-| `connect-src` | `'self'` accounts.google.com www.googleapis.com | Sign-in and the Drive API — nothing else can be contacted |
-| `frame-src` | accounts.google.com | The Google sign-in frame |
-| `object-src` | `'none'` | No plugins |
-| `base-uri`, `form-action` | `'self'` | A crafted `<base>` or form cannot redirect anything off-site |
-
-### 9.4 Known limitations
-
-- **No clickjacking protection.** `frame-ancestors` is ignored when a policy is set in a `<meta>` tag. It must be a real HTTP header, and GitHub Pages does not allow custom headers. Moving to a host that does is the only fix.
-- **`style-src` keeps `'unsafe-inline'`** for Google's sign-in library. Scripts, which are the real risk, stay strict.
-- **The security fixes have no automated test yet.** Until Phase 2 lands, every build is checked by hand: a scenario named `<img src=x onerror=alert(1)>` must appear on its chip as literal text, and no dialog may open.
-
-### 9.5 Licence and source protection
-
-`LICENSE` (added 22 September 2026) makes FinSim proprietary, with all rights reserved. Anyone may use the published site for personal use, and read the source and quote short excerpts with attribution for study, review or discussion. Nobody may republish the work in whole or in substantial part — renamed, reformatted, minified, obfuscated or machine-translated — or remove the notice.
-
-A licence states the terms; it cannot stop anyone downloading the code, because a browser has to be given the code to run it. Minifying the code does not hide it either. While the repository is public, the clean, commented source is one URL away on `raw.githubusercontent.com`. The only arrangement that actually hides the source is two repositories (Section 10.2). Whether to adopt it is a decision for Section 17.
-
-## 10. Build and deployment
-
-### 10.1 The optional build
-
-`node build.js` writes `dist/`: the same site, with the JavaScript minified by terser and every local file stamped with a hash of its own contents. Nothing in the working folder is touched, so `index.html` still opens with no build. `dist/` is ignored by git.
-
-| What the build gives | Detail |
-| --- | --- |
-| Smaller download | 261.6 KB of JavaScript becomes 118.4 KB — 55% smaller, which matters on a phone on a slow connection |
-| No more stale-cache bug | The hand-bumped `?v=` is replaced by a content hash, so the stamp changes exactly when the file does. A forgotten bump used to let Pages serve an old `app.js` to phones for days |
-| Refuses to ship something broken | The build fails loudly if the CSP is missing from `index.html`, if an expected script is no longer referenced, or if any hand-written `?v=` is left behind |
-| One rule | terser runs without `toplevel` mangling. The five scripts share globals (`FSStore`, `FS_DRIVE`, `escapeHtml`, `cleanEnvelope`), and renaming across that boundary would break them silently |
-
-### 10.2 Repository arrangements
-
-| Option | How it works | Trade-off |
-| --- | --- | --- |
-| A — one public repository (today) | Pages serves `KaonHew02/FinSim` directly, either the sources or a committed `dist/` | Simplest. The source stays readable, and `LICENSE` does all the protecting |
-| B — two repositories | `FinSim` becomes private (sources, comments, history). A public `finsim-site` holds only the contents of `dist/`, and Pages serves that | The only setup that hides the source. The new site address must be added to Authorized JavaScript origins in Google Cloud, and any custom domain re-pointed. Free plan — nothing to upgrade |
-
-### 10.3 Release checklist
-
-1. Run `node build.js` and confirm it finishes without refusing.
-2. Open `dist/index.html` in a browser and run through all 13 calculators.
-3. Paste the XSS probe as a scenario name and confirm it renders as text, with no dialog.
-4. Export a file, import it back, and confirm the chips and forms return.
-5. Check the page at 375 px for horizontal overflow.
-6. Publish, then load the live site and confirm the new content hashes are served.
-
-## 11. Non-functional requirements
-
-| Requirement | Target | Where it stands |
-| --- | --- | --- |
-| Privacy | No account, no telemetry, no third-party request carrying a figure | Met. The only outbound call is to Google Drive, and only on a button press or with Auto on |
-| Data residency | Figures live in the reader's browser and, if they choose, their own Drive | Met |
-| Security | Nothing from storage or a file can run as code | Met since 22 Sep 2026 — DOM-built chips, validated imports, strict CSP. No automated regression test yet (Phase 2) |
-| Offline | Calculators work with the network off | Met on a loaded page. Not yet installable — no manifest or service worker, and the icon font is on a CDN (Phase 3) |
-| Responsiveness | Every keystroke repaints all 13 modules | Met — the full pass takes under a millisecond |
-| Load | Static files only, no framework payload | Met. The optional build cuts JavaScript by 55% |
-| Mobile | No horizontal overflow at 375 px | Met and verified. Breakpoints at 1,180, 900 and 720 px; the sidebar folds to an icon rail |
-| Accessibility | Keyboard-reachable controls, labelled state, readable contrast | Partial — 41 ARIA attributes in place. A full audit is Phase 2 |
-| Browser support | Current Chrome, Edge, Firefox and Safari | Met. IndexedDB falls back to localStorage where it is missing or refuses to open |
-| Resilience | The app opens and calculates if the save or Drive layer never loads | Met by design. Any rewrite of either layer must keep that load order |
-| Failure reporting | A write that fails must never report itself as saved | Met — failed writes are shown in the data panel instead of being swallowed |
-
-### 11.1 Accuracy standard
-
-The payroll modules are calibrated against payroll.my for YA 2026 to the sen. That is the standard the rest of the app is held to: where a published Malaysian authority sets out a table, FinSim reproduces the table rather than approximating it with a percentage. The parameters currently built in are listed in Appendix A.
-
-## 12. Out of scope
-
-These are deliberate omissions, not gaps. Each is called out in the panel hints of the module it would affect, because a projection that hides what it leaves out is worse than one that admits it.
-
-| Not modelled | Why |
-| --- | --- |
-| RPGT on property sales | 30% of the gain inside three years, tapering to nil from the sixth. It depends on facts the app does not ask for |
-| First-home stamp duty exemptions | They change with every Budget and turn on eligibility the app cannot verify |
-| Daily-rest loan interest | The monthly-rest basis a letter offer quotes differs by a few ringgit a month and leaves totals within rounding |
-| Market sequence risk | A long projection is a direction, not a prediction; one average return says so more honestly than an invented distribution |
-| Tax on investment returns | Out of scope for a planning figure given in today's ringgit |
-| A bank's internal credit scoring | Banks apply their own income haircuts and stress rates. DSR caps in the app are typical ceilings, not rules |
-| Simpanan Shariah EPF split | Conventional savings only |
-| EPF withdrawal rules and the age-55 lump sum | Not modelled in the retirement projection |
-
-Also out of scope for the product itself: user accounts, a server, a database, multiple currencies, non-Malaysian tax regimes, and any feature that would require a figure to leave the reader's control.
-
-### 12.1 The compliance boundary
-
-FinSim is a planning tool, not financial advice, and every screen and both README files say so. It makes no recommendation about a specific product, institution or security, quotes no bank's rates as fact, and takes no fee or referral. Rate guidance is given as ranges — banks 7–13% flat on a personal loan, public-sector schemes 3.5–5% — rather than as any named lender's offer. For anything binding, the app directs the reader to KWSP, LHDN or the bank itself.
-
-> **Open question:** should the disclaimer wording be reviewed against Securities Commission and Bank Negara Malaysia guidance on financial advice before FinSim is promoted beyond word of mouth?
-
-## 13. Delivery plan
-
-Phase 0 is done and deployed. Phases 1–4 are what this proposal asks for. The order is deliberate: the rules refresh protects the figures already on screen, and the test suite has to exist before the number of modules grows again.
-
-### 13.1 Phase 0 — shipped
-
-| Date | Delivered |
-| --- | --- |
-| 17 Aug 2026 | All thirteen calculators, the shared library, the README and `MODULES.md` |
-| 18 Aug 2026 | The logo and mark; first phone-display pass |
-| 20 Aug 2026 | Persistence: autosave, named scenarios, Export/Import, the Google Drive copy, the move to IndexedDB, and the Auto switch |
-| 21 Aug 2026 | Mobile layout — icon rail, three breakpoints, no horizontal overflow at 375 px |
-| 24 Aug 2026 | DD-MM-YYYY dates throughout, strict date validation, and the date stamp on backups |
-| 22 Sep 2026 | Project proposal v1.0. Security hardening — stored XSS fixed, CSP, import validation, SRI — plus `LICENSE`, `build.js` and `BUILD.md` |
-
-### 13.2 Phase 1 — statutory rules refresh
-
-The biggest risk for a calculator like this is quietly going out of date. Every Budget moves relief caps, and EPF declares its dividend once a year without advance notice.
-
-- Refresh `TAX_BRACKETS`, `RELIEF_GROUPS`, `SOCSO_CATEGORIES`, `EPF_ACCOUNTS`, `DSR_CAPS` and the stamp duty scales for the assessment year agreed at approval.
-- Show on each module the assessment year it calculates for.
-- Commit the refresh as a checklist in the repository, so it becomes a documented task rather than something someone has to remember.
-
-### 13.3 Phase 2 — test suite, security regression tests and accessibility
-
-The app has no tests in the repository. The 23 tests written during the persistence work ran from a scratch directory and were never committed. This is the clearest gap in the project, and after 22 September it also covers the security fixes.
-
-- Commit a jsdom harness that loads `index.html`, runs the scripts, fires real `input` events and reads the result ids back.
-- For each module, cover the closed-form answer, the empty state, a zero-rate case, the extremes, both table views, the presets and Reset.
-- Cover the save layer: autosave across reloads; scenario save, load and delete; chip highlighting; replace-not-merge on import; and refusal of junk files.
-- Cover the security controls: hostile ids and names in imported and Drive files, the 8 MB ceiling, prototype pollution, and a check that the built `index.html` still carries the CSP.
-- Run the suite in GitHub Actions on every push.
-- Complete the accessibility audit: focus order, labels on generated fields, contrast against the ivory palette, and screen-reader wording for the result tiles.
-
-### 13.4 Phase 3 — offline install
-
-- Add a web app manifest and a service worker, so FinSim installs to a phone home screen and opens with the network off.
-- Self-host the icon font, removing the last CDN dependency from the calculators.
-- Keep the no-required-build rule: the service worker is one more plain file, and `build.js` learns to hash it.
-
-### 13.5 Phase 4 — second wave of modules
-
-Candidates, in the order they would be built. Each is a nav button, a section, a `renderX()` and two registry entries, and is saved and backed up the day it lands.
-
-| Candidate | Answers |
-| --- | --- |
-| Zakat calculator | What is due on savings, income and gold at the current nisab? |
-| PTPTN repayment | What does the outstanding balance cost, and what does paying ahead save? |
-| Insurance needs | How much cover would actually replace my income? |
-| ASB financing | Does a loan to buy units beat paying in cash, at this year's dividend? |
-| Credit card payoff | Avalanche against snowball, on the cards I actually hold? |
-| Bonus planner | Where does this bonus do the most good, after the PCB deduction? |
-
-### 13.6 Indicative schedule
-
-| When | Work | Depends on |
-| --- | --- | --- |
-| Weeks 1–2 after approval | Phase 2 — test suite, security tests, CI, accessibility audit | Nothing |
-| Week 3 | Phase 3 — manifest, service worker, self-hosted icon font | Nothing |
-| Once the Budget is published | Phase 1 — rules refresh, 3–4 days | The Budget, which is usually tabled in October |
-| Week 4 onwards | Phase 4 — one module at a time, 2–3 days each | Phase 2 landing first |
-
-## 14. Resourcing, cost and timeline
-
-Running cost is the strongest part of the case. There is no server to pay for, and there never will be, because holding a reader's salary on a server is exactly what the product refuses to do.
-
-| Cost line | Amount | Note |
-| --- | --- | --- |
-| Hosting | RM 0 / month | GitHub Pages, static files. The two-repository option is also free |
-| Database | RM 0 / month | None. Records are in the reader's own browser |
-| Google Cloud | RM 0 / month | `drive.file` is not a sensitive scope, so there is no verification review and no quota cost at this scale |
-| Third-party services | RM 0 / month | No analytics, no error reporting, no CDN account |
-| Build tooling | RM 0 | terser is fetched by `npx` at build time |
-| Domain | RM 0, or about RM 60 / year | Optional — only if a custom domain replaces the `github.io` address |
-| **Total** | **RM 0–60 / year** |   |
-
-### 14.1 Effort
-
-These are estimates for one part-time developer, and they are the figures most worth challenging. Phase 0 took about eight working days at that pace, and that is the only real data point.
-
-| Phase | Estimate | Depends on |
-| --- | --- | --- |
-| 1 — Statutory rules refresh | 3–4 days | The current year's Budget being published |
-| 2 — Tests, security tests and accessibility | 7–9 days | Nothing |
-| 3 — Offline install | 2–3 days | Nothing |
-| 4 — Second wave of modules | 2–3 days per module | Phase 2 landing first |
-| Annual upkeep thereafter | 3–4 days / year | Recurs every Budget |
-
-Phases 1 to 3 come to about three weeks of part-time work. Phase 4 is open-ended by design and can stop after any module.
-
-### 14.2 Assumptions behind these figures
-
-- One developer, part-time, continuing at the pace of Phase 0.
-- No paid design, marketing or support.
-- No custom domain unless the project decides it wants one.
-- Google Drive stays free at this usage; the app writes one JSON file per reader.
-
-## 15. Risks and mitigations
-
-The first two matter most. A calculator that is quietly wrong is worse than no calculator, and a reader who loses their figures does not come back.
-
-| Risk | Impact | Likelihood | Mitigation |
-| --- | --- | --- | --- |
-| Statutory rules go out of date after a Budget | High — payroll figures become wrong without warning | High, every year | Phase 1. Every movable figure is already a named constant; show the assessment year on screen and keep a refresh checklist |
-| A regression ships unnoticed | High — there are no committed tests | Medium | Phase 2: the jsdom suite in CI on every push |
-| A malicious backup or Drive file injects script | High — runs on the shared origin | Low since 22 Sep | Fixed: DOM-built chips, validated records, single import entry point, 8 MB cap, strict CSP. Phase 2 adds regression tests |
-| The reader clears browsing data and loses everything | High for that reader | Medium | Export to a file, the Drive copy, and the empty-browser prompt that offers to bring the Drive copy down |
-| A new store is added and silently not backed up | Medium — invisible until a restore | Low | `BACKUP_STORES` is the single list to update; add it to the add-a-module checklist |
-| The page is framed by another site (clickjacking) | Medium | Low | `frame-ancestors` cannot be set from a `<meta>` tag on GitHub Pages. Accepted for now; revisit if the site moves to a host with headers |
-| The code is copied and republished | Medium | Medium | `LICENSE` puts the terms on record; the two-repository option hides the source. Minifying is not protection |
-| Google changes the sign-in library or OAuth flow | Medium — Drive stops working | Low | The app opens and calculates without `drive.js`. Export/Import needs no account and is the documented fallback |
-| The CDN icon font fails or is tampered with | Low — icons vanish, figures do not | Medium | SRI drops a tampered file; Phase 3 self-hosts the font |
-| A reader shares the Drive folder publicly | High — exposes salary and saved scenarios | Low | `docs/DRIVE.md` tells the reader to keep the folder Restricted; `drive.file` means the app sees nothing else |
-| A reader treats a 30-year projection as a prediction | Medium | Medium | Every module states its assumptions, and both READMEs say it is a planning tool, not advice |
-| Only one person maintains it | Medium — the project stops if one person stops | Medium | `MODULES.md` documents every formula and the add-a-module recipe; there is no framework a successor would have to learn |
-| A browser drops or restricts IndexedDB | Low | Low | `store.js` falls back to localStorage and the app behaves exactly as before |
-
-## 16. Success metrics and acceptance criteria
-
-FinSim collects no analytics, and this proposal does not ask to change that. The metrics are therefore properties of the build that can be checked by running it, not usage figures — which the product deliberately cannot measure.
-
-### 16.1 Acceptance criteria per phase
-
-| Phase | Done when |
-| --- | --- |
-| 1 | Every statutory constant matches the agreed assessment year; each module shows the year it computes; the refresh checklist is committed |
-| 2 | The jsdom suite is committed, covers all 13 modules, the save layer and the security controls, and passes in GitHub Actions on every push; the accessibility audit has no outstanding high-severity findings |
-| 3 | FinSim installs to a phone home screen, opens and calculates with the network off, and loads nothing from a CDN for the calculators to work |
-| 4 | Each new module ships with tests, an entry in `MODULES.md` and an assumptions note on screen, and is saved, backed up and scenario-ready without a line added to `save.js` |
-
-### 16.2 Standing quality bar
-
-- Payroll figures agree with payroll.my to the sen for the current assessment year.
-- A full `renderAll()` pass stays under a millisecond.
-- No horizontal overflow at 375 px on any module.
-- The app opens and calculates with `save.js`, `store.js` and `drive.js` all absent.
-- A failed write never reports itself as saved.
-- Every module's assumptions note names what it does not model.
-- A hostile scenario name renders as text, and every build carries the CSP.
-
-### 16.3 If usage ever needs measuring
-
-The options that hold no figures are GitHub stars and forks, reports that arrive unasked, and Google Cloud's own count of accounts that have granted the Drive scope. Anything more detailed would mean sending something from the reader's browser, which is exactly the trade-off the product exists to refuse.
-
-## 17. Decisions requested and next steps
-
-Six decisions unblock the work. Phase 2 needs none of them and can start immediately, because the test gap exists whatever else is agreed.
-
-- [ ] Approve Phases 1–3 — about three weeks part-time, RM 0 in new cost.
-- [ ] Confirm the assessment year Phase 1 refreshes to, and who supplies the Budget figures.
-- [ ] Decide whether Phase 4 is approved as a block, module by module, or deferred.
-- [ ] Choose repository arrangement A (one public repo) or B (private source, public built site).
-- [ ] Decide whether the disclaimer wording goes for a compliance read before any promotion.
-- [ ] Decide on a custom domain, or keep the `github.io` address.
-
-### 17.1 Open questions
-
-| Question | Why it matters | Needed by |
-| --- | --- | --- |
-| Who owns the annual rules refresh? | It recurs every Budget and is the top risk in the register. Without a named owner it depends on someone remembering | Before Phase 1 |
-| Is the effort estimate realistic? | Phase 0's eight days is the only data point behind every estimate | Before approval |
-| Should the source be hidden? | Option B is the only thing that hides it, and it changes where the site is served from | Before the next release |
-| Should Phase 4 be reordered? | The six candidates are a judgement call, not researched demand | Before Phase 4 |
-| Does the project want to be findable? | Nothing in the build markets it, and with no analytics, success would be invisible | Any time |
-
-### 17.2 What happens on approval
-
-1. Commit the jsdom harness, including the security cases, and wire it into GitHub Actions. Phase 2 starts; no decisions required.
-2. Add the manifest and service worker, and self-host the icon font.
-3. Refresh the statutory constants once the assessment year is confirmed and the Budget is published.
-4. Build Phase 4 modules one at a time, each with tests and a `MODULES.md` entry, stopping once further modules stop being worthwhile.
-
-### 17.3 Approval
-
-Signing below approves the phases and records the decisions marked in Section 17. Anything left unmarked stays open.
-
-| Role | Name | Signature | Date |
-| --- | --- | --- | --- |
-| Prepared by | Kaon Hew |   | 23 Sep 2026 |
-| Reviewed by |   |   |   |
-| Approved by |   |   |   |
-
-## Appendix A — Statutory parameters as built
-
-The figures in the build as of 23 September 2026, for the resident individual, YA 2026. These are exactly what Phase 1 refreshes.
-
-### A.1 Income tax brackets (`TAX_BRACKETS`)
-
-| Chargeable income (RM) | Rate on this slice |
+| Chargeable income (RM) | Rate on the slice |
 | --- | --- |
 | 0 – 5,000 | 0% |
 | 5,001 – 20,000 | 1% |
@@ -744,177 +435,445 @@ The figures in the build as of 23 September 2026, for the resident individual, Y
 | 600,001 – 2,000,000 | 28% |
 | Above 2,000,000 | 30% |
 
-A RM 400 rebate (`REBATE_AMOUNT`) applies when chargeable income is RM 35,000 or less (`REBATE_CEILING`).
+A RM 400 rebate applies at chargeable income of RM 35,000 or less.
 
-### A.2 Personal reliefs (`RELIEF_GROUPS`)
-
-| Group | Relief | Type | Amount (RM) |
-| --- | --- | --- | --- |
-| You & your family | Individual & dependent relatives | Fixed | 9,000 |
-|   | Disabled individual | Flag | 7,000 |
-|   | Spouse or alimony | Flag | 4,000 |
-|   | Disabled spouse | Flag | 6,000 |
-|   | Children under 18, or 18+ in pre-university study | Per child | 2,000 |
-|   | Children 18+ in tertiary study | Per child | 8,000 |
-|   | Disabled children | Per child | 6,000 |
-| Savings & insurance | EPF & approved provident funds | Capped | 4,000 |
-|   | Life insurance & takaful | Capped | 3,000 |
-|   | PRS & deferred annuity | Capped | 3,000 |
-|   | Education & medical insurance | Capped | 3,000 |
-|   | SOCSO & EIS contributions | Capped | 350 |
-|   | SSPN net savings | Capped | 8,000 |
-| Medical | Serious illness, fertility & check-ups | Capped | 10,000 |
-|   | Medical & care for parents | Capped | 8,000 |
-|   | Supporting equipment for the disabled | Capped | 6,000 |
-| Lifestyle, education & home | Lifestyle | Capped | 2,500 |
-|   | Sports gear, facilities & training | Capped | 1,000 |
-|   | Education fees for yourself | Capped | 7,000 |
-|   | Childcare & kindergarten fees | Capped | 3,000 |
-|   | Breastfeeding equipment | Capped | 1,000 |
-|   | EV charging facility | Capped | 2,500 |
-|   | Housing loan interest | Capped | 7,000 |
-
-### A.3 SOCSO categories (`SOCSO_CATEGORIES`)
-
-| Category | Employer | Employee |
-| --- | --- | --- |
-| Employment Injury & Invalidity & Lindung 24 (default) | 1.75% | 1.25% |
-| Employment Injury & Lindung 24 | 1.25% | 0.75% |
-| Employment Injury & Invalidity | 1.75% | 0.50% |
-| Employment Injury Only | 1.25% | 0.00% |
-| No Contribution | 0.00% | 0.00% |
-
-Contributions come from the published PERKESO table (reproduced exactly by `socsoBaseEmployer`), scaled to the category and rounded to the nearest 5 sen. Wage ceiling RM 6,000. Lindung 24 is optional 24-hour cover adding 0.75% to the employee share; payroll.my defaults to it, and so does FinSim.
-
-### A.4 EIS and EPF
-
-| Item | Built-in rule |
+| Relief group | Lines and caps (RM) |
 | --- | --- |
-| EIS (SIP) | Band top × 0.2% − RM 0.10 per side; employer share equals employee share; wage ceiling RM 6,000 |
-| EPF contribution | Third Schedule: wage to the top of its RM 20 band, rate applied, rounded up to the ringgit; exact percentage above RM 20,000 |
-| EPF rates offered | Employee 11 / 9 / 8%; employer 13 / 12% |
-| EPF accounts (`EPF_ACCOUNTS`) | Akaun 1 75%, Akaun 2 15%, Akaun 3 10% (May 2024 restructure) |
-| EPF relief for PCB | Capped at RM 4,000 a year |
-| Dividend crediting | Once a year; contributions weighted by months held (5.5/12 across twelve equal contributions) |
+| You & your family | Individual 9,000 (automatic) · disabled individual 7,000 · spouse or alimony 4,000 · disabled spouse 6,000 · child under 18 or pre-university 2,000 each · child 18+ in tertiary study 8,000 each · disabled child 6,000 each |
+| Savings & insurance | EPF & approved funds 4,000 · life insurance & takaful 3,000 · PRS & deferred annuity 3,000 · education & medical insurance 3,000 · SOCSO & EIS 350 · SSPN net savings 8,000 |
+| Medical | Serious illness, fertility & check-ups 10,000 · medical & care for parents 8,000 · supporting equipment for the disabled 6,000 |
+| Lifestyle, education & home | Lifestyle 2,500 · sports 1,000 · own education fees 7,000 · childcare & kindergarten 3,000 · breastfeeding equipment 1,000 · EV charging 2,500 · housing loan interest 7,000 |
 
-### A.5 DSR caps and bands
-
-| Setting | Value |
-| --- | --- |
-| Caps (`DSR_CAPS`) | Private 60% · GLC 70% · Government 80% |
-| Credit card (`CARD_MIN_RATE`) | Counted at 5% of the balance |
-| EPF rate for net income (`DSR_EPF_RATE`) | 11% |
-| Variable income counted | 80% by default, adjustable |
-
-| DSR up to | Band | What it means |
+| SOCSO category | Employer | Employee |
 | --- | --- | --- |
-| 30% | Comfortable | The ratio will not be what the application turns on |
-| 40% | Healthy | The level a bank likes to see |
-| 60% | Acceptable | Approved, though the amount may be trimmed |
-| 70% | High risk | Needs a big income, a guarantor or something pledged |
-| Above 70% | Over-extended | Turned down almost everywhere |
+| Injury & Invalidity & Lindung 24 (default) | 1.75% | 1.25% |
+| Injury & Lindung 24 | 1.25% | 0.75% |
+| Injury & Invalidity | 1.75% | 0.50% |
+| Injury only | 1.25% | 0.00% |
+| No contribution | 0.00% | 0.00% |
 
-### A.6 Property purchase costs
+SOCSO is reproduced exactly from the PERKESO table by a closed form in `socsoBaseEmployer`, scaled to the category and rounded to 5 sen. EIS is the band top × 0.2% − RM 0.10 on each side. Both stop at a RM 6,000 wage.
 
 | Scale | Bands |
 | --- | --- |
-| MOT stamp duty (`MOT_STAMP_BANDS`) | First RM 100,000 at 1% · next to RM 500,000 at 2% · next to RM 1,000,000 at 3% · above at 4% |
-| Solicitors' scale (`LEGAL_FEE_BANDS`), on price and again on loan | First RM 500,000 at 1.25% · next to RM 1,000,000 at 1% · next to RM 3,000,000 at 0.7% · next to RM 5,000,000 at 0.6% · above at 0.5% · minimum RM 500 per agreement |
-| Loan-agreement stamp duty (`LOAN_STAMP_RATE`) | 0.5% of the loan |
-| SST on legal fees (`LEGAL_SST`) | 8% |
-| Disbursements (`LEGAL_EXTRAS`) | RM 2,000 flat — searches, registration, valuation |
+| MOT stamp duty | 1% to RM 100,000 · 2% to RM 500,000 · 3% to RM 1,000,000 · 4% above |
+| Solicitors' scale, on the price and again on the loan | 1.25% to RM 500,000 · 1% to RM 1,000,000 · 0.7% to RM 3,000,000 · 0.6% to RM 5,000,000 · 0.5% above · minimum RM 500 |
+| Loan agreement, SST, disbursements | 0.5% of the loan · 8% on legal fees · RM 2,000 flat |
+| DSR bands | ≤ 30% Comfortable · ≤ 40% Healthy · ≤ 60% Acceptable · ≤ 70% High risk · above, Over-extended |
 
-**Worked example.** A RM 500,000 property with a RM 450,000 loan: MOT stamp duty RM 9,000 (RM 1,000 + RM 8,000); loan-agreement duty RM 2,250; legal fees RM 14,825 (RM 6,250 on the price + RM 5,625 on the loan, plus RM 950 SST, plus RM 2,000 disbursements). Entry costs total RM 26,075 on top of the deposit.
+## Security and privacy
 
-### A.7 Loan limits
+A local-only app has no server to breach and no password database to leak, so its threat model is short — but it is not empty. The page runs whatever code reaches it, and on `kaonhew02.github.io` it shares an origin with every other project published under the account. The security work of 22 September 2026 was driven by one concrete finding: **a scenario's `id` went into a `data-id="…"` attribute by string concatenation while the name beside it was escaped**, and `backupApply` wrote an imported file's stores verbatim after checking a single string anyone can type. An id of `x"><img src=x onerror=…>` in an imported or Drive file broke out, ran without a click, and re-fired on every reload. It was confirmed executing in a browser before the fix. That route is now closed on several separate layers, so no single mistake reopens it.
 
-| Loan | Maximum tenure | Maximum margin | Basis |
-| --- | --- | --- | --- |
-| Home | 50 years | 90% | Reducing, monthly rest |
-| Car (hire purchase) | 9 years | 90% | Flat, Rule of 78 on settlement |
-| Personal | 10 years (120 months) | — | Flat or reducing; 0.5% stamp duty |
-| Savings goal horizon | 50 years (600 months) | — | Beyond that it is a retirement plan |
+### Threat model
 
-### A.8 Emergency fund cover (`suggestedCover`)
+| Threat | How it would arrive | Status |
+| --- | --- | --- |
+| Script injection through a backup | A crafted id or name in a file passed to **Import**, or a tampered copy pulled **From Drive** | Closed — chips built as DOM nodes, every record validated, CSP |
+| Script injection through the page | Any `<script>` or inline handler that reaches the DOM | Refused by the Content-Security-Policy |
+| An oversized or malformed file | A huge or broken JSON passed to Import | Closed — 8 MB ceiling; one choke point rebuilds every file |
+| Prototype pollution | `__proto__` keys in an imported file | Closed — blocked on the import path |
+| A tampered third-party asset | The icon stylesheet changed at the CDN | Closed — a Subresource Integrity hash makes the browser refuse a changed file |
+| Clickjacking | The page framed invisibly by another site | Open — `frame-ancestors` needs an HTTP header GitHub Pages cannot send |
+| Secrets in a public repository | A client secret pasted into `drive-config.js` | None in the tree; the web flow needs no secret |
+| Over-broad Google access | A Drive scope that reaches the whole Drive | `drive.file` only — files the app itself created |
+| Someone at the unlocked computer | Physical access to the browser profile | **Out of scope** — the operating-system account is the lock |
 
-| Situation | Months |
+### Controls in place
+
+- **Content-Security-Policy** in `index.html`: `default-src 'self'`; scripts only from this site and `accounts.google.com`; `object-src 'none'`; `base-uri` and `form-action 'self'`; network calls only to Google's sign-in and Drive APIs. `style-src` keeps `'unsafe-inline'` only because Google's sign-in library injects its own `<style>` block.
+- **No inline script.** Thirteen inline `onsubmit` handlers were moved into JavaScript, which is what makes the strict `script-src` possible.
+- **Built as nodes, not strings.** Scenario chips are made with `textContent` and `dataset`, so there is no longer a line of code that could get the escaping wrong.
+- **Validated on the way in.** `validScenario` and `cleanSnapshot` check the shape of every record; `cleanEnvelope` and `cleanStores` rebuild every imported file; ids, names, modules and values are all constrained. Nothing legitimate is refused.
+- **Subresource Integrity** on the Bootstrap Icons stylesheet, pinned to 1.11.3 with a `sha384` hash.
+- **Referrer policy** `strict-origin-when-cross-origin` — the origin is sent, never the path.
+- **A build that refuses to ship without the policy.** `build.js` fails loudly if the CSP has gone missing from `index.html`.
+
+Verified on 22 September: the original attack inert with the payload still in storage, hostile names rendered as text, imports filtered, prototype pollution blocked, all thirteen calculators correct, and no console errors in either the source or the built copy.
+
+### Privacy by construction
+
+No account, no telemetry, no analytics, no error reporting and no key in the source. The only network calls the page is permitted to make are Google's sign-in and the Drive copy — and only after the reader asks. With Drive's **Auto** switch off, which is the default, nothing leaves the browser unless the reader presses a button. `docs/DRIVE.md` opens by telling the reader to keep the Drive folder Restricted.
+
+### What is not protected, and why
+
+- **No clickjacking protection.** `frame-ancestors` is ignored when a policy is set in a `<meta>` tag; it must be a real HTTP header, and GitHub Pages does not allow custom headers. A host that does — Cloudflare Pages or Netlify, both free at this scale — closes it. That move is on the roadmap, not in Phase 4.
+- **Records are not encrypted at rest.** IndexedDB is readable by anyone using the same operating-system account. The proportionate answer is an optional passphrase on the *exported* file, not a passphrase on every start.
+- **The export file is plain JSON.** That is deliberate — it is readable without this app, which is the exit guarantee — and it means the reader should keep it as carefully as a payslip.
+- **The source is readable.** A browser has to be given the code to run it, and while the repository is public the commented source is one URL away. `LICENSE` makes the terms explicit; the only arrangement that actually hides the source is two repositories — a private one holding the source and a public one holding only `dist/`. That is a decision for [Conclusion and approval](#conclusion-and-approval), not a defect.
+
+## Brand, UI and UX design
+
+FinSim is an ivory page carrying white cards, a light sidebar and a brand-blue accent — a calculator's calm rather than a dashboard's alarm. The headline figure on every module sits in one dark tile, and everything else on the screen exists to explain it.
+
+### Identity
+
+|  |  |
 | --- | --- |
-| Starting point | 3 |
-| Contract work | +2 |
-| Own business | +3 |
-| One income in the household | +1 |
-| 1–2 dependants | +1 |
-| 3 or more dependants | +2 |
-| Ceiling | 12 |
+| Name | FinSim — one word, `Fin` in brand blue, `Sim` in ink |
+| Slogan | *Simulate your financial future.* — under the wordmark, in spaced capitals |
+| Page title | *FinSim — Malaysia Money Calculators* |
+| Mark | A rising trend line over three bars, on a brand-blue rounded square |
 
-## Appendix B — Glossary
+`FinSimLogo.svg` is the mark with the wordmark; `FinSimMark.svg` is the mark alone and serves as the favicon. The PNG sizes beside them are generated from the SVGs.
+
+### Palette
+
+| Token | Value | Use |
+| --- | --- | --- |
+| `--ivory` | `#fffdf3` | The page |
+| `--canvas` | `#f4f1e8` | Recessed surfaces |
+| `--paper` | `#ffffff` | Cards |
+| `--ink` | `#14192a` | Primary text and the headline tile — 17.1:1 on ivory |
+| `--ink-2` | `#5c6579` | Secondary text — 5.7:1 on ivory |
+| `--ink-3` | `#98a0b1` | Quiet text: hints, units, nav captions — **2.6:1**, below AA |
+| `--brand` | `#004baf` | Fills that carry white text — 8.0:1 |
+| `--brand-soft` | `#eaf1fb` | Selected rows and pills; brand text on it is 7.0:1 |
+| `--epf` / `--sos` | `#4b83e0` / `#12876f` | Statutory segments in the distribution bars |
+| `--amber` | `#d98330` | Secured, long-term debt — a warning, not an alarm |
+| `--red` | `#c8322b` | Unsecured debt and shortfalls |
+
+### Accessibility
+
+- Contrast was measured, not eyeballed. Primary and secondary text clear WCAG AA comfortably — ink at 17.1:1 and ink-2 at 5.7:1 on ivory, white on brand blue at 8.0:1.
+- **Quiet text does not.** `--ink-3` is 2.6:1 and carries hints, units and the nav captions. Phase 4 decides whether to lift it to a darker grey or to keep it as a documented hierarchy decision; either way it stops being an accident.
+- Amber at 2.9:1 and the EPF blue at 3.7:1 are fills in the bars, never text.
+- 41 ARIA attributes are in place across the markup and scripts. A full audit — focus order, labels on the generated relief and net-worth fields, and screen-reader wording for the result tiles — is Phase 4 work.
+
+### Layout
+
+A light sidebar of four groups — Tax, Loans, Savings, Financial Planning — that folds to an icon rail from a chevron on its edge. Each module is a **sticky input panel beside a results column**: three tiles (the dark one is the answer), a distribution bar, then tables that flip between yearly and monthly. The grey pills under a field are shortcuts into that field, never separate inputs. Breakpoints at 1,180, 900 and 720 px, and no horizontal overflow at 375 px.
+
+The bars are plain HTML and CSS — no chart library, no canvas and no CDN script. The app is still a folder you can copy.
+
+### Deliberate divergence from MoneyFlow
+
+FinSim shares a developer and an origin with MoneyFlow, and must not be mistaken for it. The divergence is a standing instruction, recorded in both proposals:
+
+|  | MoneyFlow | FinSim |
+| --- | --- | --- |
+| Navigation | Dark nav column + sticky topbar | Light sidebar folding to an icon rail |
+| Palette | Emerald on mint | Brand blue on ivory |
+| Headline | One full-bleed hero gradient band | Three stat tiles, the dark one leading |
+| Layout | Single centred stack, inputs and answers together | Sticky input panel + results column |
+| Logo | A horse hugging a coin | A rising trend line over three bars |
+
+## Technology stack and tooling
+
+Every choice here was made against one constraint: **the calculators should still run in ten years from a copied folder**, with no toolchain to reinstall and no package to have gone unmaintained.
+
+| Layer | Choice | Why | Rejected |
+| --- | --- | --- | --- |
+| Language | Vanilla ES2020 JavaScript | No transpile step, no version to pin | TypeScript — adds a build for one developer |
+| UI | Hand-written HTML + CSS | 1,645 lines of tokenised CSS is less than a framework's runtime | React, Vue — a bundler and a dependency tree |
+| Charts | HTML and CSS bars | A distribution bar is a row of widths; it follows the tokens for free | Chart.js — a CDN script for thirteen bars |
+| Icons | Bootstrap Icons 1.11.3 | One stylesheet with an SRI hash, no JavaScript | Inline SVG per icon — pages of markup for no gain |
+| Storage | IndexedDB, `localStorage` fallback | \~3,034 MB on the reader's machine; no server, no account | A hosted database — the one thing the product refuses |
+| Backup | JSON export + Google Drive `drive.file` | A file the reader owns, readable without this app | A proprietary format — lock-in with no upside |
+| Auth | None | There is nothing to log in to | Any login — nothing on a server to protect |
+| Hosting | GitHub Pages, `main` root | Free, versioned, custom-domain capable | A paid host — unnecessary until headers are wanted |
+| Security | Content-Security-Policy + SRI, no inline script | Enforced by the browser, costs nothing at runtime | Obfuscation — delays a determined reader by minutes and costs debuggability forever |
+| Build | Optional `build.js` with terser | 55% smaller JavaScript and content-hash stamps; sources untouched | A required bundler — breaks the double-clicked `index.html` |
+| Version control | Git, public repo `KaonHew02/FinSim` | 25 commits of history | — |
+| Tests | jsdom driving the real page | Real DOM, real `app.js`, no framework in the shipped tree | Jest, Vitest — config and a dependency tree |
+
+### The two external assets, and why they are acceptable
+
+The Bootstrap Icons stylesheet and Google's Identity Services client are the only things fetched from outside the repository. Neither is load-bearing — the icons degrade to blank glyphs, and the Google client is only used when the reader signs in to Drive. Every calculator works with both blocked and the network off. Phase 4 self-hosts the icon font, which leaves Google's client as the only outside asset, and only for Drive.
+
+### The build step, stated once
+
+`build.js` was added to stop the code being copied, and **on its own it does not do that** — minified code is one click of the browser's formatter away from readable, and while the repository is public the commented original is one URL away. What it does give is real: 55% less JavaScript on a phone, the end of the stale-cache bug, and a build that refuses to ship without the Content-Security-Policy. It stays optional, because the double-clicked `index.html` is worth more than any build.
+
+### Development workflow
+
+1. Edit `app.js`, `style.css`, `index.html` or `save.js` directly. No inline script or `on…=` attribute: the Content-Security-Policy refuses both.
+2. Open `index.html` in a browser. Drive needs the real origin, so test it on the live site or a registered localhost.
+3. Run the jsdom checks for the modules touched.
+4. **Bump `?v=` on every script and the stylesheet in `index.html`** — or run `node build.js` and publish `dist/`.
+5. Paste `<img src=x onerror=alert(1)>` as a scenario name once: it must appear as literal text, and no dialog may open.
+6. Commit and push to `main`; GitHub Pages redeploys the root.
+
+## Project plan and timeline
+
+Three phases are complete. Phase 4 is what this proposal asks approval for: ten weeks from 5 October to 11 December 2026, closing the four open objectives.
+
+### Phases 1–3 — delivered
+
+| Phase | Dates | Delivered |
+| --- | --- | --- |
+| **1 · Build** | 17–18 Aug 2026 | All thirteen calculators and the shared library; `README.md` and `MODULES.md`; the logo and mark; the first phone-display passes |
+| **2 · Persistence** | 20–21 Aug 2026 | Autosave, named scenarios, Export/Import, the Google Drive copy with the Auto switch, the move to IndexedDB; the mobile layout with the icon rail and three breakpoints |
+| **3 · Refinement and hardening** | 24 Aug – 23 Sep 2026 | DD-MM-YYYY dates throughout with strict validation (24 Aug); project proposal (22 Sep); stored XSS fixed, CSP, import validation, SRI, `LICENSE`, `build.js` and `BUILD.md` (22 Sep); proposal revisions (23 Sep) |
+
+Twenty-five commits across those three phases. Eight days built every calculator; the month after went on keeping figures safe — which is the honest signal of where the difficulty was: not the arithmetic, but the promise that a plan typed once is still there, and still harmless, next year.
+
+### Phase 4 — proposed
+
+| Week | Dates | Work | Deliverable |
+| --- | --- | --- | --- |
+| 1–2 | 5–16 Oct | **Test suite** — a jsdom harness committed to the repository; the closed-form answer, empty state, zero rate, extremes, both table views, presets and Reset for all thirteen modules; the save layer; GitHub Actions on every push | CI green on `main`; objective O12 met |
+| 3 | 19–23 Oct | **Security regression tests and accessibility** — hostile ids and names through Import and Drive, the 8 MB ceiling, prototype pollution, the CSP in the built page; focus order, labels, contrast decision on `--ink-3` | O13 met or documented |
+| 4 | 26–30 Oct | **Offline install** — a web app manifest, a service worker hashed by `build.js`, and the icon font self-hosted | O14 met |
+| 5 | 2–6 Nov | **Rules keyed by year of assessment** — YA 2026 kept, YA 2027 added once the Budget is tabled, the year shown on every module, and a refresh checklist committed | O15 met |
+| 6 | 9–13 Nov | **Publishing decision** — one public repository, or private source with a public `finsim-site` holding only `dist/`; carried out if chosen | A written decision, signed off |
+| 7–8 | 16–27 Nov | **M14 Zakat** — on savings, income and gold at the current nisab | Module live with tests and a `MODULES.md` entry |
+| 9 | 30 Nov – 4 Dec | **M15 PTPTN repayment** — what the balance costs and what paying ahead saves | Module live with tests and a `MODULES.md` entry |
+| 10 | 7–11 Dec | Full regression, documentation refresh, release | v1.0 |
+
+Malaysia's Budget is usually tabled in October. If it slips, weeks 5 and 6 swap; nothing else depends on the order.
+
+### Milestones
+
+| ID | Milestone | Due | Gate |
+| --- | --- | --- | --- |
+| MS-1 | Test suite in CI | 2026-10-16 | All thirteen modules covered; every push runs it |
+| MS-2 | Security and accessibility green | 2026-10-23 | Security cases pass; no open high-severity accessibility finding |
+| MS-3 | Installable offline | 2026-10-30 | Opens and calculates with the network off |
+| MS-4 | YA 2027 rules in | 2026-11-06 | Every constant matches the tabled Budget; the year is on screen |
+| MS-5 | Publishing route decided | 2026-11-13 | Written decision; carried out if chosen |
+| MS-6 | Modules M14–M15 live | 2026-12-04 | Each with tests and a `MODULES.md` entry |
+| MS-7 | v1.0 released | 2026-12-11 | Live, documented, tagged |
+
+MS-1 is a hard gate. No new module is started before the suite that would catch it breaking an old one exists.
+
+## Testing and quality assurance
+
+**FinSim has no tests in the repository today**, and this is the clearest gap in the project. Twenty-three checks were written during the persistence work and run from a scratch directory; they were never committed. The security fix of 22 September was verified by hand in a real browser. A finance calculator's failure mode is not a crash — it is a figure that is quietly wrong — so the plan below puts the arithmetic layer first.
+
+| Layer | Tool | Catches |
+| --- | --- | --- |
+| Arithmetic and behaviour | jsdom driving the real `index.html` + `app.js` | Wrong totals, a broken rule table, a module that disagrees with another |
+| Save layer | jsdom with a plain-object `localStorage` | Autosave across reloads, scenario save / load / delete, replace-not-merge, junk files refused |
+| Async storage | `fake-indexeddb`, plus one real-browser check | The IndexedDB path, which a jsdom pass does **not** exercise |
+| Security | Crafted backup files through Import and From Drive | Script that runs, a record that slips validation, a built page without its CSP |
+| Layout and colour | A real browser at 375, 720, 900 and 1,180 px | Overflow, contrast, the collapsed rail |
+
+### How the jsdom harness works
+
+The app is evaluated as the browser would evaluate it, then driven through its own DOM — no mocks of the module code, because a mock of the arithmetic is not a test of the arithmetic.
+
+- `runScripts: 'outside-only'`, then `window.eval(appJs)`.
+- **`DOMContentLoaded` is dispatched by hand.** jsdom finished parsing long before `app.js` is evaluated, so the real event is already gone.
+- A nav button is clicked, real `input` events are fired on the fields, and the result ids are read back as text.
+- The expected figures come from outside the app — payroll.my for the payroll modules, the closed-form formula for the loans and annuities — never from the code under test.
+
+### What every module must pass
+
+- The closed-form answer for its maths, to the sen.
+- The empty state: nothing typed shows the prompt, not `RM 0.00`.
+- A zero-rate case, and the extremes — nothing saved, already past the target, negative net worth.
+- Both table views, every preset pill, and Reset leaving the other modules alone.
+- A snapshot round trip: capture, reset, apply, identical figures.
+
+### Browser matrix
+
+| Browser | Storage path | Status |
+| --- | --- | --- |
+| Chrome / Edge (Chromium) | IndexedDB | Primary target, verified |
+| Firefox | IndexedDB | Needs verification in Phase 4 — asks permission before persisting storage |
+| Safari (macOS, iOS) | IndexedDB | Needs verification in Phase 4 — Safari evicts site storage after 7 days of no use |
+| Any private window | `localStorage` fallback, or none | Degrades with a visible warning, never silently |
+
+### Two traps worth writing down
+
+**A jsdom pass does not prove the IndexedDB path works.** The `localStorage` fallback is what every jsdom run takes; the async path needs `fake-indexeddb` and a real browser.
+
+**The built copy is a different program.** `build.js` runs terser without top-level mangling because the five scripts share globals — `FSStore`, `FS_DRIVE`, `escapeHtml`, `cleanEnvelope`. A future change to that flag would break the built site silently while every test against the sources still passed. The suite must run against `dist/` as well.
+
+### Release checklist
+
+- [ ] jsdom suite green against the sources **and** against `dist/`
+- [ ] One manual browser check of a real save and reload on the IndexedDB path
+- [ ] Export → Import round trip restores every form and every scenario
+- [ ] A scenario named `<img src=x onerror=alert(1)>` renders as text and opens no dialog
+- [ ] `BACKUP_STORES` and `RECORD_KEYS` both contain any store a change added
+- [ ] Every module's assumptions note still names what it does not model
+- [ ] No horizontal overflow at 375 px on any module
+- [ ] No inline script or event handler added; the page loads with no CSP violations in the console
+- [ ] **`?v=` bumped on every script and the stylesheet**, or `node build.js` run and `dist/` published
+- [ ] Pushed to `main`, and the live site checked with a hard reload
+
+## Risks and mitigations
+
+The architecture trades a server for privacy and cost, and a calculator's worst failure is a figure that is quietly wrong. Both kinds of risk are stated plainly below rather than minimised.
+
+| ID | Risk | Likelihood | Impact | Mitigation | Residual |
+| --- | --- | --- | --- | --- | --- |
+| R1 | **Statutory rules go stale after a Budget.** Every payroll figure becomes wrong without warning | High, every year | Critical | Every movable figure is a named constant; Phase 4 keys rules by year of assessment and shows the year on screen; a refresh checklist | Medium — someone must still read the Budget |
+| R2 | **A regression ships unnoticed.** There are no committed tests | Medium | Critical | Phase 4 weeks 1–3: the jsdom suite in CI on every push, against sources and `dist/` | Low once MS-1 lands |
+| R3 | A saved plan's answer changes silently when the rules are refreshed | Certain at each refresh | Medium | Rules keyed by year; a scenario records the year it was saved under | Low |
+| R4 | **The figures have one copy and the reader is holding it.** Clearing browsing data deletes every plan | High over a year | High | Export to a dated file; opt-in Drive Auto; the empty-browser prompt; `persist()` requested once | Medium — all need the reader to have acted once |
+| R5 | Safari evicts site storage after 7 days of no use | Medium | High | The Drive copy; Phase 4 verification on Safari; documented for iOS readers | Medium — not fixable client-side |
+| R6 | A cached `app.js` makes a fixed bug appear unfixed | High | Medium | `?v=` bumped by hand; `build.js` stamps a content hash instead | Low with the build, Medium without |
+| R7 | A new store is added but left out of `BACKUP_STORES` or `RECORD_KEYS`, and silently never backs up | Low | High | Release checklist | Medium — **recommend a start-up assertion that fails loudly** |
+| R8 | **A crafted backup runs code in the page** — through Import or a tampered Drive copy | Low (was High until 22 Sep) | Critical | Chips built as DOM nodes; every record validated; one import choke point; 8 MB ceiling; CSP with no inline script | Low |
+| R9 | The page is framed by another site (clickjacking) | Low | Medium | None possible on GitHub Pages; a host with headers closes it at RM 0 | Medium — open until the host changes |
+| R10 | A reader treats a 30-year projection as a prediction, or a figure as advice | Medium | High | Assumptions on every screen; ranges not rates; no product named; both READMEs say *planning tool, not advice* | Low–Medium — a compliance read before any promotion |
+| R11 | The code is copied and republished | Medium | Low | `LICENSE` puts the terms on record; the two-repository option hides the source | Medium |
+| R12 | **One developer, shared with MoneyFlow's Phase 4** over the same weeks | High | Medium | Phase 4 capped at \~10 hours a week; `MODULES.md` documents every formula; milestones after MS-1 can slip without breaking the release | Medium |
+| R13 | Google changes the sign-in library or the OAuth flow | Low | Medium | The calculators run without `drive.js`; Export/Import needs no account and is the documented fallback | Low |
+| R14 | The CDN icon font fails or is blocked | Medium | Low | SRI drops a tampered file; Phase 4 self-hosts the font | Low |
+| R15 | A reader shares the Drive folder publicly | Low | High | `docs/DRIVE.md` says keep it Restricted; `drive.file` means the app sees nothing else | Low–Medium |
+
+### The three that deserve a decision, not just a mitigation
+
+**R1 and R3 are the same risk.** Both are a year of assessment changing under figures that were right. Overwriting the constants every Budget fixes this year's payslip and quietly rewrites last year's plans. Keying the rules by year — YA 2026 kept, YA 2027 added, the year shown on screen — fixes both, and it is Phase 4 week 5.
+
+**R2 is avoidable.** It is the only critical risk with no mitigation in place today, and the cure is known and small. That is why the test suite is weeks 1–2 and MS-1 is a hard gate.
+
+**R12 is a resourcing decision.** MoneyFlow's Phase 4 runs 28 September to 20 December with the same developer. The two proposals together ask for about twenty hours a week. Approving both means accepting that pace, or staggering FinSim's modules M14–M15 into the new year.
+
+## Resources and budget
+
+FinSim costs RM 0 a month to run today, and Phase 4 keeps it there. The only real resource is developer time.
+
+### People
+
+| Role | Who | Commitment |
+| --- | --- | --- |
+| Developer / designer / tester | One person | \~10 hours a week for 10 weeks — **100 hours** |
+| Reviewer and product owner | The same person, acting as the user | Continuous — the calculators are used while they are built |
+
+A second developer is not proposed. `MODULES.md` documents every module's inputs, formulas and assumptions, the shared library and the add-a-module recipe, which is what a handover would run on. The same developer is proposed for MoneyFlow's Phase 4 over the same weeks — see R12.
+
+### Tools and infrastructure
+
+| Item | Cost | Note |
+| --- | --- | --- |
+| GitHub repository and Pages hosting | RM 0 | Free for public repositories |
+| GitHub Actions | RM 0 | Free for public repositories; the test suite runs here |
+| Storage | RM 0 | The reader's own browser — \~3,034 MB of IndexedDB |
+| Google Cloud project + Drive API | RM 0 | `drive.file` is not a sensitive scope: no verification review, no quota cost at this scale |
+| Google Drive space | RM 0 | The reader's existing 15 GB; a backup file is a few kilobytes |
+| Node.js, terser, jsdom | RM 0 | Development only; none ships |
+| **Current total** | **RM 0 / month** |  |
+
+### Optional and conditional costs
+
+| Item | Cost | When it applies |
+| --- | --- | --- |
+| Custom domain | \~RM 60 / year | Only if the `github.io` address is not wanted |
+| A host that sends headers (Cloudflare Pages, Netlify) | RM 0 | If clickjacking protection is wanted — both free tiers allow a `frame-ancestors` header |
+| Private source repository (option B) | RM 0 | If the source is to be hidden — a private repo on the free plan, with Pages serving the public `finsim-site` |
+
+### Three-year total cost of ownership
+
+| Scenario | Year 1 | Years 2–3 | 3-year total |
+| --- | --- | --- | --- |
+| **Stay as is** | RM 0 | RM 0 | **RM 0** |
+| Stay as is + custom domain | RM 60 | RM 120 | **RM 180** |
+| Move to a host with headers | RM 0 | RM 0 | **RM 0** |
+| Host with headers + custom domain | RM 60 | RM 120 | **RM 180** |
+
+Every route costs at most a domain name, because nothing in the product needs a server — and holding a reader's salary on one is the thing it exists to refuse.
+
+### What the budget does not buy
+
+No paid analytics, no error-reporting service, no paid CI, no design tooling and no icon licence. Everything in the stack is free at this scale because the app is deliberately small enough to stay there.
+
+## Future roadmap
+
+After v1.0, the work splits into three groups: things worth building, things deliberately not built, and the sibling apps this one shares a developer with.
+
+### Candidates for v1.1 and beyond
+
+| Item | Value | Cost |
+| --- | --- | --- |
+| Insurance needs | How much cover would actually replace an income | Medium — a new module on the existing library |
+| ASB financing | Whether a loan to buy units beats paying cash, at this year's dividend | Medium |
+| Bonus planner | Where a bonus does the most, after the PCB deduction M1 already computes | Low — it is mostly M1, M7 and M9 composed |
+| Year-against-year view | The same plan under YA 2026 and YA 2027 side by side | Low once rules are keyed by year |
+| A printable one-page result | A figure to take to the bank or the family, on paper | Low — a print stylesheet |
+| A host with headers | Clickjacking closed with `frame-ancestors`; the CSP moved to a real header | Low — the site is static and moves as-is |
+| Passphrase on the export file | Makes the backup safe to leave in Drive or on a USB stick | Medium — Web Crypto, and a forgotten passphrase is a lost backup, so it must stay optional |
+| Start-up store assertion | Converts R7 from silent data loss into a console error | Low |
+
+### Deliberately not built, and why
+
+These have each been considered and declined. The reasons are recorded so they are not re-proposed as if new:
+
+- **A calculate button.** A result that waits for a button can be out of date; one that follows every keystroke cannot.
+- **Sharing a plan by link.** The figures would ride in the address bar, in browser history and in any server log the link passes through. The referrer policy exists to keep the path private; a feature that put salaries in it would undo that.
+- **Merging on import.** Merging means guessing which saved plan is which, and a wrong guess is two *Plan A*s that disagree.
+- **Live bank rates.** A rate quoted as fact is a recommendation by another name, and it goes stale the day after it is fetched.
+- **Predicting the EPF dividend.** EPF declares it once a year and never in advance; the reader sets one per year instead.
+- **A credit card payoff module.** MoneyFlow's M6 already does this against a real ledger; a second copy here would drift from it.
+
+### The sibling apps
+
+FinSim is one of three apps by the same developer:
+
+| App | Domain | Relationship |
+| --- | --- | --- |
+| **MoneyFlow** | Personal financial management | Shares a developer and the `kaonhew02.github.io` origin, and the same IndexedDB and Drive-copy approach; no code is shared at runtime |
+| **PlanSphere** | Travel planning | Shares MoneyFlow's shell in blue; nothing with FinSim |
+
+The shared origin is why the security work mattered beyond FinSim: a script that ran in one app's page could reach every project published under the account. What must not travel between them is the look — MoneyFlow is emerald on mint with a hero band, FinSim is blue on ivory with stat tiles.
+
+## Conclusion and approval
+
+FinSim already works. All thirteen calculators are live, they share one library and agree with each other, the payroll figures match payroll.my to the sen, the running cost is RM 0 a month, and since 22 September the app is hardened against the one attack a local-only app realistically faces — a file pretending to be a backup. What this proposal asks for is not a build from nothing: it is ten weeks to put a test suite under what exists, to make the rules follow the year, and to add two modules on a footing that will not break the first thirteen.
+
+The case rests on three things:
+
+1. **The expensive part is done.** Thirteen calculators on statutory tables, one shared library, persistence with a Drive copy, and a hardened import path.
+2. **The remaining scope is small and known.** Two weeks of tests, one of security and accessibility, one of offline install, one of year-keyed rules, one decision, and two modules.
+3. **The downside is bounded.** If Phase 4 stops after MS-1, the project still gains the one thing it most lacks — tests — at RM 0.
+
+### The decision requested
+
+|  |  |
+| --- | --- |
+| **Approve** | Phase 4 as scoped — 10 weeks, \~100 hours, one developer |
+| **Budget** | RM 0 committed. A custom domain (\~RM 60 a year) only if wanted |
+| **Decide** | Repository arrangement — one public repo, or private source with a public built site |
+| **Decide by** | 2026-10-02 |
+| **Start** | 2026-10-05 |
+
+If Phase 4 is not approved, the recommendation is to do weeks 1–2 anyway: commit the test suite and run it on every push. It is the only critical risk with nothing in place today, and it protects every figure already on screen.
+
+### Sign-off
+
+| Role | Name | Decision | Date |
+| --- | --- | --- | --- |
+| Product owner |  |  |  |
+| Developer |  |  |  |
+| Reviewer |  |  |  |
+
+### Sources
+
+Every figure in this proposal is taken from the FinSim repository as it stands on 23 September 2026 (commit `0b3ed96`) — the source files `app.js`, `index.html`, `style.css`, `save.js`, `store.js`, `drive.js`, `drive-config.js` and `build.js`; the documents `README.md`, `MODULES.md`, `BUILD.md`, `docs/DRIVE.md` and `LICENSE`; and 25 commits of git history from 17 August to 23 September 2026. Contrast ratios were computed from the tokens in `style.css`. The comparison with other tools in [Background and problem statement](#background-and-problem-statement) and the note on when the Budget is tabled are stated from general knowledge and should be checked before the document is shown outside the project.
+
+## Glossary
 
 | Term | Meaning |
 | --- | --- |
-| AKPK | Agensi Kaunseling dan Pengurusan Kredit — the credit counselling agency whose net-worth grouping the app follows |
-| ASB | Amanah Saham Bumiputera — a unit trust fund that pays an annual dividend |
-| BE form | The annual income tax return for a resident individual without business income |
-| BPA | Biro Perkhidmatan Angkasa — the payroll-deduction bureau for civil servants |
-| CCRIS | Central Credit Reference Information System, run by Bank Negara Malaysia |
-| CSP | Content-Security-Policy — a browser rule listing where scripts, styles and connections may come from |
-| DSR | Debt service ratio — monthly commitments divided by net monthly income |
-| EIS / SIP | Employment Insurance System (Sistem Insurans Pekerjaan), administered by PERKESO |
-| EPF / KWSP | Employees Provident Fund (Kumpulan Wang Simpanan Pekerja) |
-| GLC | Government-linked company |
-| IndexedDB | A database built into every modern browser; FinSim's working store |
-| LHDN | Lembaga Hasil Dalam Negeri — the Inland Revenue Board of Malaysia |
-| MOT | Memorandum of Transfer — the property transfer instrument that attracts stamp duty |
-| MTD / PCB | Monthly tax deduction (Potongan Cukai Bulanan) |
-| NDI | Net disposable income — what is left after commitments |
-| OAuth | The protocol Google uses to let the reader grant the app access to one Drive file |
-| PERKESO / SOCSO | Pertubuhan Keselamatan Sosial — the Social Security Organisation |
-| PRS | Private Retirement Scheme |
-| PTPTN | Perbadanan Tabung Pendidikan Tinggi Nasional — the national higher-education loan fund |
-| RPGT | Real Property Gains Tax |
-| Rule of 78 | The method the Hire-Purchase Act 1967 uses to rebate unearned charges on early settlement |
-| SRI | Subresource Integrity — a hash that makes the browser refuse a CDN file that has been changed |
-| SSPN | Skim Simpanan Pendidikan Nasional — the national education savings scheme |
-| SST | Sales and Service Tax |
-| XSS | Cross-site scripting — getting a page to run script it did not intend to |
-| YA | Year of assessment |
-
-## Appendix C — Commit history
-
-| Date | Commit | Message |
-| --- | --- | --- |
-| 17 Aug 2026 | `065f338` | first commit |
-| 17 Aug 2026 | `0254eb3` | complete module |
-| 17 Aug 2026 | `aa91682` | Create README.md |
-| 17 Aug 2026 | `9fbad78` | README.md |
-| 17 Aug 2026 | `5947b7c` | Delete README.md |
-| 17 Aug 2026 | `b7840bb` | README.md |
-| 17 Aug 2026 | `62d2135` | Merge branch 'main' of https://github.com/KaonHew02/FinSim |
-| 18 Aug 2026 | `a460f58` | new logo |
-| 18 Aug 2026 | `1e1837e` | enhancement for phone display |
-| 18 Aug 2026 | `6eb4a2c` | phone display enhancement |
-| 18 Aug 2026 | `28289a7` | phone display enhancement |
-| 20 Aug 2026 | `d620cee` | add save to google drive feature |
-| 20 Aug 2026 | `b065e8d` | client id |
-| 20 Aug 2026 | `08e3277` | change to InedxedDB |
-| 20 Aug 2026 | `96cae6f` | auto button |
-| 20 Aug 2026 | `b95fee0` | drive |
-| 20 Aug 2026 | `63f8ad8` | auto button |
-| 20 Aug 2026 | `1e984cf` | auto button |
-| 20 Aug 2026 | `3bb8d33` | auto button |
-| 20 Aug 2026 | `30d6c9a` | auto button |
-| 21 Aug 2026 | `a007db5` | mobile version enhancement |
-| 24 Aug 2026 | `af1f33d` | check date format |
-| 22 Sep 2026 | `3b96982` | Add project proposal |
-| 22 Sep 2026 | `388351b` | Fix stored XSS in scenario chips; add CSP, input validation, licence |
-
-## Appendix D — Project documents
-
-| Document | Purpose |
-| --- | --- |
-| `README.md` | What each calculator answers, what makes it Malaysian, how to use it, how figures are kept |
-| `MODULES.md` | Every module's inputs, formulas and assumptions; the shared library; house rules; adding and testing a module |
-| `BUILD.md` | The optional build, what it does and does not protect, and the two-repository arrangement |
-| `docs/DRIVE.md` | Setting up the Google Drive copy once, how Auto behaves, and keeping the folder Restricted |
-| `LICENSE` | Proprietary licence — the terms for using, reading and quoting the work |
-| `PROPOSAL.md` | This proposal, readable on GitHub |
-| `FinSim-Project-Proposal.docx` | This proposal as a Word document, with cover page, contents and sign-off |
+| **sen** | One hundredth of a ringgit |
+| **YA** | Year of assessment — the year whose income is being taxed |
+| **LHDN** | Lembaga Hasil Dalam Negeri, the Inland Revenue Board of Malaysia |
+| **PCB / MTD** | Potongan Cukai Bulanan — monthly tax deduction from salary |
+| **BE form** | The annual return for a resident individual without business income |
+| **EPF / KWSP** | Employees Provident Fund — mandatory retirement savings; Akaun 1 / 2 / 3 at 75 / 15 / 10 since May 2024 |
+| **Third Schedule** | The EPF contribution table: the wage to the top of its RM 20 band, the contribution rounded up to the ringgit |
+| **SOCSO / PERKESO** | Social Security Organisation — employment injury and invalidity cover, RM 6,000 wage ceiling |
+| **EIS / SIP** | Employment Insurance System, administered by PERKESO |
+| **DSR** | Debt service ratio — monthly commitments divided by net monthly income |
+| **NDI** | Net disposable income — what is left after commitments |
+| **CCRIS** | Bank Negara Malaysia's credit reference system — the commitments a bank can see |
+| **BPA** | Biro Perkhidmatan Angkasa — payroll deduction for civil servants |
+| **Hire purchase** | Flat-rate financing under the Hire-Purchase Act 1967, how cars are bought |
+| **Rule of 78** | The Act's rebate of unearned charges on early settlement |
+| **MOT** | Memorandum of Transfer — the property transfer that attracts stamp duty |
+| **SST** | Sales and Service Tax — 8% on solicitors' fees |
+| **RPGT** | Real Property Gains Tax |
+| **AKPK** | Agensi Kaunseling dan Pengurusan Kredit — whose net-worth grouping the app follows |
+| **ASB** | Amanah Saham Bumiputera — a unit trust paying a declared yearly dividend |
+| **PTPTN** | The national higher-education loan fund |
+| **SSPN** | Skim Simpanan Pendidikan Nasional — the national education savings scheme |
+| **PRS** | Private Retirement Scheme |
+| **IndexedDB** | The browser's built-in database; FinSim's working store |
+| **CSP** | Content-Security-Policy — a rule in the page that tells the browser which scripts it may run |
+| **SRI** | Subresource Integrity — a hash that makes the browser refuse a third-party file that has changed |
+| **`drive.file`** | The narrowest Google Drive permission: only files the app itself created |
+| **XSS** | Cross-site scripting — getting a page to run script it did not mean to |
